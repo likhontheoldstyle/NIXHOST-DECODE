@@ -39,7 +39,7 @@ public final class CommitAction implements h.a {
             default:
                 int i3 = MainActivity.R;
                 mainActivity.hideKeyboard();
-                mainActivity.showCommitSheet(J0.a("Update ", file.getName()), new CommitAction(file, codeEditorView, mainActivity));
+                mainActivity.showCommitSheet(StringPlus.stringPlus("Update ", file.getName()), new CommitAction(file, codeEditorView, mainActivity));
                 break;
         }
         return b.d.f770c;

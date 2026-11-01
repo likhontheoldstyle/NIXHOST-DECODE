@@ -82,7 +82,7 @@ public final class ChatScreen {
     public FrameLayout endButton;
     public final long nameChangeCooldownMs;
     public Dialog sourceDialog;
-    public C1 endGlyph;
+    public ChatIconView endGlyph;
     public final String groupId;
     public final ArrayList messages;
     public TextView endEmojiText;
@@ -90,7 +90,7 @@ public final class ChatScreen {
     public final HashMap reactions;
     public ArrayList emojiCatalogCache;
     public List members;
-    public final X0 pollRunnable;
+    public final ChatTimerRunnable pollRunnable;
     public boolean active;
     public List typingUsers;
     public boolean seenSyncStarted;
@@ -115,7 +115,7 @@ public final class ChatScreen {
     public boolean outboxFlushing;
     public TextView netText;
     public final HashSet pendingLocalIds;
-    public C0002a1 networkCallback;
+    public ChatNetworkCallback networkCallback;
     public boolean galleryPending;
     public ChatMessage replyTarget;
     public Uri cameraUri;
@@ -123,7 +123,7 @@ public final class ChatScreen {
     public String recordState;
     public boolean stickToBottom;
     public MediaRecorder mediaRecorder;
-    public I2 messageList;
+    public ChatListView messageList;
     public File recordFile;
     public TextView emptyText;
     public long recordStartedAt;
@@ -145,7 +145,7 @@ public final class ChatScreen {
     
     public final h.b toaster;
     public View replyTopLine;
-    public P2 recordWaveView;
+    public WaveformView recordWaveView;
 
     
     public final h.a onSessionExpired;
@@ -160,7 +160,7 @@ public final class ChatScreen {
     
     public final boolean lightBars;
     public FrameLayout inputHolder;
-    public final X0 recordTickRunnable;
+    public final ChatTimerRunnable recordTickRunnable;
 
     
     public final int sendBlue;
@@ -179,13 +179,13 @@ public final class ChatScreen {
 
     
     public final int mediaPlaceholderColor;
-    public O0 messageAdapter;
+    public ChatAndMediaAdapter messageAdapter;
     public final HashMap playButtons;
 
     
     public final int faceBaseColor;
     public final float waveScale;
-    public final X0 playbackTickRunnable;
+    public final ChatTimerRunnable playbackTickRunnable;
 
     
     public final int textColor;
@@ -231,13 +231,13 @@ public final class ChatScreen {
     
     public final int dangerColor;
     public String groupName;
-    public J2 activeSwipe;
+    public SwipeReplyTag activeSwipe;
 
     
     public final int replyPreviewColor;
     public String groupPic;
     public ChatMessage highlightedMessage;
-    public C0022f1 palette;
+    public ChatTheme palette;
     public AvatarView groupPicView;
     public long lastLocalSentId;
     public long lastThemeSyncAt;
@@ -245,7 +245,7 @@ public final class ChatScreen {
     public long sentSoundElapsed;
     public int topInset;
     public FrameLayout imageButton;
-    public C0029h0 quickReactionRefresher;
+    public QuickReactionRefresher quickReactionRefresher;
     public ActivityRef activityRef;
     public FrameLayout micButton;
     public boolean avatarPickPending;
@@ -274,14 +274,14 @@ public final class ChatScreen {
         this.inputBarColor = z ? -11559440 : -15173646;
         this.dangerColor = -45715;
         this.replyPreviewColor = z ? -12895170 : -1775893;
-        List list = AbstractC0026g1.f511a;
+        List list = ChatThemeCatalog.themes;
         SharedPreferences sharedPreferences = AppState.prefs;
         if (sharedPreferences == null) {
             i.b.g("sp");
             throw null;
         }
         String string = sharedPreferences.getString("chat_theme", "");
-        this.palette = AbstractC0026g1.a(string == null ? "" : string);
+        this.palette = ChatThemeCatalog.byId(string == null ? "" : string);
         this.messages = new ArrayList();
         this.reactions = new HashMap();
         c.j jVar = c.j.f773a;
@@ -297,9 +297,9 @@ public final class ChatScreen {
         this.displayNames = new HashMap();
         this.groupName = "";
         this.groupPic = "";
-        this.pollRunnable = new X0(this, 1);
+        this.pollRunnable = new ChatTimerRunnable(this, 1);
         this.typingUsers = jVar;
-        this.seenIds = new b.c(new C0(i2));
+        this.seenIds = new b.c(new ValueProvider(i2));
         this.reactionTimestamps = new HashMap();
         this.localIdBase = 4611686018427387903L;
         this.outbox = new ArrayList();
@@ -307,11 +307,11 @@ public final class ChatScreen {
         this.pendingLocalIds = new HashSet();
         this.recordState = "idle";
         this.waveformSamples = new ArrayList();
-        this.recordTickRunnable = new X0(this, 2);
+        this.recordTickRunnable = new ChatTimerRunnable(this, 2);
         this.playingMessageId = Long.MIN_VALUE;
         this.waveViews = new HashMap();
         this.playButtons = new HashMap();
-        this.playbackTickRunnable = new X0(this, 0);
+        this.playbackTickRunnable = new ChatTimerRunnable(this, 0);
         this.playbackSpeed = 1.0f;
         this.previewMessageId = Long.MIN_VALUE;
         this.speedLabels = new HashMap();
@@ -351,17 +351,17 @@ public final class ChatScreen {
         return arrayList2;
     }
 
-    public static final void updateEditSaveButton(FrameLayout frameLayout, ChatScreen chatScreen, C1 c1, EditText editText, String str) {
+    public static final void updateEditSaveButton(FrameLayout frameLayout, ChatScreen chatScreen, ChatIconView c1, EditText editText, String str) {
         if (hasEditedText(editText, str)) {
             chatScreen.getClass();
             frameLayout.setBackground(circleDrawable(-13793025));
-            c1.f53b = chatScreen.lightBars ? -14934495 : -1;
+            c1.color = chatScreen.lightBars ? -14934495 : -1;
             c1.invalidate();
             return;
         }
         chatScreen.getClass();
         frameLayout.setBackground(circleDrawable(-3091496));
-        c1.f53b = -11907758;
+        c1.color = -11907758;
         c1.invalidate();
     }
 
@@ -426,7 +426,7 @@ public final class ChatScreen {
                 P.addView(k1, new LinearLayout.LayoutParams(0, -2, 1.0f));
                 P.addView(chatScreen.makeText((String) bVar.f765b, 30.0f, i3, false));
                 if (i.b.a(obj, str)) {
-                    P.setOnClickListener(new H(dialog, chatScreen, k0, 0));
+                    P.setOnClickListener(new ReactionDialogClickListener(dialog, chatScreen, k0, 0));
                 }
                 linearLayout.addView(P, layoutParamsDefault(chatScreen, -1, -2, 0, 0, 0, 60));
             }
@@ -535,7 +535,7 @@ public final class ChatScreen {
         frameLayout.setBackground(circleDrawable(i5));
         String str2 = R ? "bellmute" : "bell";
         int i6 = chatScreen.sendBlue;
-        C1 M = chatScreen.makeIcon(str2, R ? i6 : i3, 26);
+        ChatIconView M = chatScreen.makeIcon(str2, R ? i6 : i3, 26);
         M.setCut(i5);
         float f4 = 26;
         frameLayout.addView(M, new FrameLayout.LayoutParams(chatScreen.dp(f4), chatScreen.dp(f4), 17));
@@ -546,23 +546,23 @@ public final class ChatScreen {
             i6 = i3;
         }
         k1.addView(chatScreen.makeText(str3, 16.0f, i6, true), chatScreen.layoutParams(-2, -2, 0, 6, 0, 0));
-        k1.setOnClickListener(new ViewOnClickListenerC0072s0(chatScreen, linearLayout, i2));
+        k1.setOnClickListener(new PairClickListener(chatScreen, linearLayout, i2));
         LinearLayout.LayoutParams W2 = chatScreen.layoutParams(-2, -2, 0, 28, 0, 0);
         W2.gravity = 1;
         linearLayout.addView(k1, W2);
         linearLayout.addView(chatScreen.sectionHeader(24, "Users"));
         String str4 = chatScreen.username;
-        linearLayout.addView(chatScreen.settingsRow(chatScreen.avatarView(str4, 38), "Profile photo", null, new C0036j(chatScreen, 14)));
+        linearLayout.addView(chatScreen.settingsRow(chatScreen.avatarView(str4, 38), "Profile photo", null, new ChatScreenAction(chatScreen, 14)));
         long Z = chatScreen.savedNameChangedAt();
         long currentTimeMillis = (chatScreen.nameChangeCooldownMs + Z) - System.currentTimeMillis();
-        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "editf"), chatScreen.displayName(str4), (Z <= 0 || currentTimeMillis <= 0) ? "Change name" : J0.a("You can change it again in ", formatDaysLeft(currentTimeMillis)), new C0036j(chatScreen, 15)));
+        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "editf"), chatScreen.displayName(str4), (Z <= 0 || currentTimeMillis <= 0) ? "Change name" : StringPlus.stringPlus("You can change it again in ", formatDaysLeft(currentTimeMillis)), new ChatScreenAction(chatScreen, 15)));
         linearLayout.addView(chatScreen.sectionHeader(12, "Actions"));
-        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "people"), "See members", null, new C0036j(chatScreen, 16)));
+        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "people"), "See members", null, new ChatScreenAction(chatScreen, 16)));
         if (m.m.F(str4, chatScreen.groupId)) {
-            linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(chatScreen.dangerColor, "trashf"), "Clear group data", null, new C0036j(chatScreen, 17)));
+            linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(chatScreen.dangerColor, "trashf"), "Clear group data", null, new ChatScreenAction(chatScreen, 17)));
         }
         linearLayout.addView(chatScreen.sectionHeader(12, "Customization"));
-        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "themes"), "Themes", chatScreen.palette.f482b, new C0036j(chatScreen, 18)));
+        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "themes"), "Themes", chatScreen.palette.displayName, new ChatScreenAction(chatScreen, 18)));
         FrameLayout frameLayout2 = new FrameLayout(activity);
         frameLayout2.setBackground(circleDrawable(i4));
         String p0 = quickReaction();
@@ -576,13 +576,13 @@ public final class ChatScreen {
             textView.setGravity(17);
             frameLayout2.addView(textView, new FrameLayout.LayoutParams(-1, -1, 17));
         }
-        linearLayout.addView(chatScreen.settingsRow(frameLayout2, "Quick reaction", null, new C0029h0(chatScreen, linearLayout)));
+        linearLayout.addView(chatScreen.settingsRow(frameLayout2, "Quick reaction", null, new QuickReactionRefresher(chatScreen, linearLayout)));
         linearLayout.addView(chatScreen.sectionHeader(12, "Privacy & support"));
-        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "gear"), "Coming soon", null, new C0036j(chatScreen, 19)));
+        linearLayout.addView(chatScreen.settingsRow(chatScreen.iconBadge(i3, "gear"), "Coming soon", null, new ChatScreenAction(chatScreen, 19)));
         linearLayout.addView(new View(activity), layoutParamsDefault(chatScreen, -1, chatScreen.dp(36), 0, 0, 0, 60));
     }
 
-    public static final void showTransientText(RunnableC0064q runnableC0064q, ChatScreen chatScreen, TextView textView, String str) {
+    public static final void showTransientText(HideTextRunnable runnableC0064q, ChatScreen chatScreen, TextView textView, String str) {
         textView.setText(str);
         textView.setVisibility(0);
         chatScreen.handler.removeCallbacks(runnableC0064q);
@@ -735,7 +735,7 @@ public final class ChatScreen {
             chatScreen.markLocalSent(j4);
             chatScreen.refreshMessages();
             chatScreen.applyScroll(true);
-            chatScreen.sendExecutor.execute(new RunnableC0040k(put, chatScreen, j4, k0, pairAction2));
+            chatScreen.sendExecutor.execute(new ChatSendRunnable(put, chatScreen, j4, k0, pairAction2));
             return;
         }
         long j5 = chatScreen.localIdCounter + 1;
@@ -985,13 +985,13 @@ public final class ChatScreen {
         if (this.connectionState == 1 || (!this.outbox.isEmpty())) {
             queueRetry(j2, put, k0);
         } else {
-            new Thread(new RunnableC0093z0(put, this, j2, k0)).start();
+            new Thread(new SendAndPersistRunnable(put, this, j2, k0)).start();
         }
     }
 
     public final void maybeLoadOlderAtTop() {
         if (this.hasMore && !this.loadingOlder && this.cacheLoaded && (!this.messages.isEmpty())) {
-            I2 i2 = this.messageList;
+            ChatListView i2 = this.messageList;
             if (i2 == null) {
                 i.b.g("lv");
                 throw null;
@@ -999,7 +999,7 @@ public final class ChatScreen {
             if (i2.canScrollVertically(-1)) {
                 return;
             }
-            I2 i22 = this.messageList;
+            ChatListView i22 = this.messageList;
             if (i22 == null) {
                 i.b.g("lv");
                 throw null;
@@ -1019,14 +1019,14 @@ public final class ChatScreen {
         while (it.hasNext()) {
             arrayList.add(newLocalId());
         }
-        new Thread(new RunnableC0040k(list, this, arrayList, addLocalMediaMessage("image", arrayList, 0, k0, c.j.f773a), k0)).start();
+        new Thread(new ChatSendRunnable(list, this, arrayList, addLocalMediaMessage("image", arrayList, 0, k0, c.j.f773a), k0)).start();
     }
 
     public final void sendVideo(Uri uri) {
         ChatMessage k0 = this.replyTarget;
         setReplyTarget(null);
         String c0 = newLocalId();
-        new Thread(new RunnableC0040k(this, uri, c0, addLocalMediaMessage("video", AppState.p(c0), 0, k0, c.j.f773a), k0)).start();
+        new Thread(new ChatSendRunnable(this, uri, c0, addLocalMediaMessage("video", AppState.p(c0), 0, k0, c.j.f773a), k0)).start();
     }
 
     public final b.b makeFullscreenDialog() {
@@ -1119,7 +1119,7 @@ public final class ChatScreen {
     }
 
     public final int headerBgColor() {
-        return isDarkBg() ? this.palette.f489i : this.barDark;
+        return isDarkBg() ? this.palette.iconColor : this.barDark;
     }
 
     public final void setAvatarFromUri(Uri uri) {
@@ -1131,7 +1131,7 @@ public final class ChatScreen {
     }
 
     public final int titleTextColor() {
-        return isDarkBg() ? this.palette.f487g : this.textColor;
+        return isDarkBg() ? this.palette.titleTextColor : this.textColor;
     }
 
     public final void attachLongPressMenu(View view, final ChatMessage k0) {
@@ -1199,7 +1199,7 @@ public final class ChatScreen {
                             if (i.b.a(str4, str5)) {
                                 textView.setBackground(ChatScreen.circleDrawable(chatScreen3.lightBars ? -14272175 : -1575937));
                             }
-                            textView.setOnClickListener(new V(dialog, chatScreen3, k03, str4, str5));
+                            textView.setOnClickListener(new MessageDialogClickListener(dialog, chatScreen3, k03, str4, str5));
                             P.addView(textView, new LinearLayout.LayoutParams(0, chatScreen3.dp(52), 1.0f));
                             i2 = 17;
                         }
@@ -1208,7 +1208,7 @@ public final class ChatScreen {
                         frameLayout2.setBackground(ChatScreen.circleDrawable(chatScreen3.chipColor));
                         float f3 = 22;
                         frameLayout2.addView(new IconView(activity, "plus", chatScreen3.textColor, 2.4f), new FrameLayout.LayoutParams(chatScreen3.dp(f3), chatScreen3.dp(f3), 17));
-                        frameLayout2.setOnClickListener(new H(dialog, chatScreen3, k03, 1));
+                        frameLayout2.setOnClickListener(new ReactionDialogClickListener(dialog, chatScreen3, k03, 1));
                         float f4 = 40;
                         frameLayout.addView(frameLayout2, new FrameLayout.LayoutParams(chatScreen3.dp(f4), chatScreen3.dp(f4), 17));
                         P.addView(frameLayout, new LinearLayout.LayoutParams(0, chatScreen3.dp(52), 1.0f));
@@ -1219,16 +1219,16 @@ public final class ChatScreen {
                         if (a3) {
                             chatScreen2 = chatScreen3;
                             k04 = k03;
-                            chatScreen3.menuRow(linearLayout, "copyf", "Copy", chatScreen3.textColor, new W(dialog, chatScreen3, k03, 0));
+                            chatScreen3.menuRow(linearLayout, "copyf", "Copy", chatScreen3.textColor, new MessageMenuAction(dialog, chatScreen3, k03, 0));
                         } else {
                             chatScreen2 = chatScreen3;
                             k04 = k03;
                         }
                         final boolean z = a2;
                         if (z && a3) {
-                            chatScreen2.menuRow(linearLayout, "editf", "Edit", chatScreen2.textColor, new W(dialog, chatScreen2, k04, 1));
+                            chatScreen2.menuRow(linearLayout, "editf", "Edit", chatScreen2.textColor, new MessageMenuAction(dialog, chatScreen2, k04, 1));
                         }
-                        chatScreen2.menuRow(linearLayout, "replyf", "Reply", chatScreen2.textColor, new W(dialog, chatScreen2, k04, 2));
+                        chatScreen2.menuRow(linearLayout, "replyf", "Reply", chatScreen2.textColor, new MessageMenuAction(dialog, chatScreen2, k04, 2));
                         chatScreen2.menuRow(linearLayout, "trashf", z ? "Delete" : "Delete for me", chatScreen2.dangerColor, new h.a() { 
                             @Override 
                             public final Object addLocalMediaMessage() {
@@ -1238,9 +1238,9 @@ public final class ChatScreen {
                                 ChatMessage k05 = k04;
                                 chatScreen4.getClass();
                                 if (ChatMedia) {
-                                    chatScreen4.showBottomSheet(false, new Y(chatScreen4, k05, 0));
+                                    chatScreen4.showBottomSheet(false, new DeleteOrRenameDialogContent(chatScreen4, k05, 0));
                                 } else {
-                                    chatScreen4.showConfirmDialog("Delete?", "Are you sure you want to delete this message?", "No", "Yes", new C0005b0(chatScreen4, k05, 0));
+                                    chatScreen4.showConfirmDialog("Delete?", "Are you sure you want to delete this message?", "No", "Yes", new MessageAction(chatScreen4, k05, 0));
                                 }
                                 return b.d.f770c;
                             }
@@ -1261,7 +1261,7 @@ public final class ChatScreen {
     }
 
     public final int themedSubTextColor() {
-        return isDarkBg() ? this.palette.f488h : this.subTextColor;
+        return isDarkBg() ? this.palette.subTextColor : this.subTextColor;
     }
 
     public final void setConnectionState(int i2) {
@@ -1330,7 +1330,7 @@ public final class ChatScreen {
     }
 
     public final boolean isDarkBg() {
-        return !this.palette.f484d;
+        return !this.palette.isDefault;
     }
 
     public final void setReplyTarget(ChatMessage k0) {
@@ -1388,21 +1388,21 @@ public final class ChatScreen {
             throw null;
         }
         editText.requestFocus();
-        I2 i2 = this.messageList;
+        ChatListView i2 = this.messageList;
         if (i2 == null) {
             i.b.g("lv");
             throw null;
         }
-        i2.post(new RunnableC0048m(this, 7));
-        this.handler.postDelayed(new RunnableC0048m(this, 8), 150L);
+        i2.post(new ChatScreenRunnable(this, 7));
+        this.handler.postDelayed(new ChatScreenRunnable(this, 8), 150L);
     }
 
-    public final C1 makeIcon(String str, int i2, int i3) {
-        C1 c1 = new C1(this.activity, str, i2);
+    public final ChatIconView makeIcon(String str, int i2, int i3) {
+        ChatIconView c1 = new ChatIconView(this.activity, str, i2);
         float f2 = i3;
         c1.setMinimumWidth(dp(f2));
         c1.setMinimumHeight(dp(f2));
-        c1.setCut(str.equals("face") ? isDarkBg() ? this.palette.p | (-16777216) : this.faceBaseColor : (isDarkBg() && (str.equals("deliv") || str.equals("sent"))) ? -1 : isDarkBg() ? this.palette.f486f : this.bgColor);
+        c1.setCut(str.equals("face") ? isDarkBg() ? this.palette.inputPillColor | (-16777216) : this.faceBaseColor : (isDarkBg() && (str.equals("deliv") || str.equals("sent"))) ? -1 : isDarkBg() ? this.palette.navigationBarColor : this.bgColor);
         return c1;
     }
 
@@ -1498,11 +1498,11 @@ public final class ChatScreen {
         ImageView imageView = new ImageView(this.activity);
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setBackgroundColor(this.mediaPlaceholderColor);
-        imageView.setOutlineProvider(new T0(0, fArr));
+        imageView.setOutlineProvider(new RoundedOutlineProvider(0, fArr));
         imageView.setClipToOutline(true);
         ChatMedia.loadInto(imageView, str, i2, bVar);
         imageView.setOnClickListener(new TripleClickListener(aVar, this, str, 0));
-        imageView.setOnLongClickListener(new ViewOnLongClickListenerC0065q0());
+        imageView.setOnLongClickListener(new NoopLongClickListener());
         return imageView;
     }
 
@@ -1538,7 +1538,7 @@ public final class ChatScreen {
         float z = dp(3);
         float ChatMedia = dp(2.5f);
         Activity activity = this.activity;
-        P2 p2 = new P2(activity, z, ChatMedia);
+        WaveformView p2 = new WaveformView(activity, z, ChatMedia);
         p2.setFg(-1);
         ArrayList arrayList = this.waveformSamples;
         if (a2) {
@@ -1548,7 +1548,7 @@ public final class ChatScreen {
             r11 = 1;
             textView = null;
         } else {
-            C1 M = makeIcon("play", -1, 26);
+            ChatIconView M = makeIcon("play", -1, 26);
             float f3 = 26;
             r11 = 1;
             P.addView(M, layoutParamsDefault(this, dp(f3), dp(f3), 0, 0, 11, 32));
@@ -1558,7 +1558,7 @@ public final class ChatScreen {
             this.recordWaveView = null;
             this.playButtons.put(-2L, M);
             this.waveViews.put(-2L, p2);
-            setClickAction(M, new C0036j(this, 5));
+            setClickAction(M, new ChatScreenAction(this, 5));
         }
         P.addView(p2, new LinearLayout.LayoutParams(0, dp(34), 1.0f));
         TextView f1 = makeText(formatDuration(a2 ? this.recordBaseDurationMs : this.recordDurationMs), 16.0f, -1, r11);
@@ -1571,7 +1571,7 @@ public final class ChatScreen {
         FrameLayout frameLayout = new FrameLayout(activity);
         float f4 = 26;
         frameLayout.addView(new IconView(activity, "trashmsg", this.subTextColor, 1.7f), new FrameLayout.LayoutParams(dp(f4), dp(f4), 17));
-        setClickAction(frameLayout, new C0036j(this, 6));
+        setClickAction(frameLayout, new ChatScreenAction(this, 6));
         float f5 = 52;
         linearLayout.addView(frameLayout, new LinearLayout.LayoutParams(dp(f5), dp(f5)));
         linearLayout.addView(new View(activity), new LinearLayout.LayoutParams(0, r11, 1.0f));
@@ -1690,7 +1690,7 @@ public final class ChatScreen {
     }
 
     public final void refreshMembers() {
-        new Thread(new RunnableC0048m(this, 5)).start();
+        new Thread(new ChatScreenRunnable(this, 5)).start();
     }
 
     public final LinearLayout.LayoutParams mediaLayoutParams(float f2) {
@@ -1719,7 +1719,7 @@ public final class ChatScreen {
             return;
         }
         this.loadingOlder = true;
-        new Thread(new RunnableC0049m0(0, ((ChatMessage) arrayList.get(0)).id, this)).start();
+        new Thread(new ChatSyncRunnable(0, ((ChatMessage) arrayList.get(0)).id, this)).start();
     }
 
     public final LinearLayout.LayoutParams layoutParams(int i2, int i3, int i4, int i5, int i6, int i7) {
@@ -1804,15 +1804,15 @@ public final class ChatScreen {
         } catch (Exception unused) {
         }
         this.audioPlayer = null;
-        C1 c1 = (C1) this.playButtons.get(Long.valueOf(this.playingMessageId));
+        ChatIconView c1 = (ChatIconView) this.playButtons.get(Long.valueOf(this.playingMessageId));
         if (c1 != null) {
-            c1.set("play");
+            c1.setIcon("play");
         }
         TextView textView = (TextView) this.speedLabels.get(Long.valueOf(this.playingMessageId));
         if (textView != null) {
             textView.setVisibility(8);
         }
-        P2 p2 = (P2) this.waveViews.get(Long.valueOf(this.playingMessageId));
+        WaveformView p2 = (WaveformView) this.waveViews.get(Long.valueOf(this.playingMessageId));
         if (p2 != null) {
             p2.setProgress(0.0f);
             p2.invalidate();
@@ -1824,14 +1824,14 @@ public final class ChatScreen {
         int i2 = 2;
         this.lastLocalSentId = j2;
         this.sentSoundElapsed = 0L;
-        Handler handler = C2.f57a;
+        Handler handler = SentSoundPlayer.mainHandler;
         try {
             Object systemService = this.activity.getSystemService("audio");
             i.b.c(systemService, "null cannot be cast to non-null type android.media.AudioManager");
             if (((AudioManager) systemService).getRingerMode() != 2) {
                 return;
             }
-            C2.f58b.execute(new RunnableC0068r0(i2));
+            SentSoundPlayer.executor.execute(new ChatSignalRunnable(i2));
         } catch (Exception unused) {
         }
     }
@@ -2130,20 +2130,20 @@ public final class ChatScreen {
         return false;
     }
 
-    public final void applySwipeOffset(J2 j2, float f2) {
-        if (j2.f144c) {
+    public final void applySwipeOffset(SwipeReplyTag j2, float f2) {
+        if (j2.ownMessage) {
             f2 = -f2;
         }
         float max = Math.max(0.0f, f2);
         float z = dp(80.0f);
         float f3 = max <= z ? 0.75f * max : (0.75f * z) + ((max - z) * 0.12f);
-        j2.f142a.setTranslationX((j2.f144c ? -1.0f : 1.0f) * f3);
+        j2.rowView.setTranslationX((j2.ownMessage ? -1.0f : 1.0f) * f3);
         float b2 = AppState.b((f3 - dp(14.0f)) / dp(24.0f), 0.0f, 1.0f);
         boolean ChatMedia = max >= ((float) dp(70.0f));
         if (ChatMedia != this.swipeArmed) {
             this.swipeArmed = ChatMedia;
             if (ChatMedia) {
-                I2 i2 = this.messageList;
+                ChatListView i2 = this.messageList;
                 if (i2 == null) {
                     i.b.g("lv");
                     throw null;
@@ -2151,7 +2151,7 @@ public final class ChatScreen {
                 i2.performHapticFeedback(3);
             }
         }
-        View view = j2.f143b;
+        View view = j2.replyIconView;
         view.setAlpha(b2);
         float f4 = ((b2 * 0.6f) + 0.4f) * (ChatMedia ? 1.12f : 1.0f);
         view.setScaleX(f4);
@@ -2191,7 +2191,7 @@ public final class ChatScreen {
             }
         }
         if (i2 > 0 && arrayList.size() > 1) {
-            c.g.F(arrayList, new N0(0));
+            c.g.F(arrayList, new SortComparator(0));
         }
         return i2;
     }
@@ -2213,7 +2213,7 @@ public final class ChatScreen {
             return;
         }
         this.seenSyncStarted = true;
-        new Thread(new RunnableC0049m0(1, lastServerMessageId(), this)).start();
+        new Thread(new ChatSyncRunnable(1, lastServerMessageId(), this)).start();
     }
 
     public final void scrollToReplyTarget() {
@@ -2236,7 +2236,7 @@ public final class ChatScreen {
         if (i2 < 0) {
             return;
         }
-        I2 i22 = this.messageList;
+        ChatListView i22 = this.messageList;
         if (i22 == null) {
             i.b.g("lv");
             throw null;
@@ -2247,7 +2247,7 @@ public final class ChatScreen {
         }
         View childAt = i22.getChildAt(i2 - i22.getFirstVisiblePosition());
         if (childAt == null) {
-            I2 i23 = this.messageList;
+            ChatListView i23 = this.messageList;
             if (i23 == null) {
                 i.b.g("lv");
                 throw null;
@@ -2257,7 +2257,7 @@ public final class ChatScreen {
                 throw null;
             }
             int paddingTop = i23.getPaddingTop();
-            I2 i24 = this.messageList;
+            ChatListView i24 = this.messageList;
             if (i24 != null) {
                 i23.setSelectionFromTop(i2, Math.max(paddingTop, i24.getHeight() - dp(90)));
                 return;
@@ -2267,20 +2267,20 @@ public final class ChatScreen {
             }
         }
         int bottom = childAt.getBottom();
-        I2 i25 = this.messageList;
+        ChatListView i25 = this.messageList;
         if (i25 == null) {
             i.b.g("lv");
             throw null;
         }
         int height = bottom - i25.getHeight();
         if (height > 0) {
-            I2 i26 = this.messageList;
+            ChatListView i26 = this.messageList;
             if (i26 == null) {
                 i.b.g("lv");
                 throw null;
             }
             int top = childAt.getTop();
-            I2 i27 = this.messageList;
+            ChatListView i27 = this.messageList;
             if (i27 != null) {
                 i26.scrollListBy(Math.min(height, Math.max(top - i27.getPaddingTop(), 0)));
             } else {
@@ -2354,7 +2354,7 @@ public final class ChatScreen {
         ChatMessage k02 = (ChatMessage) obj;
         this.outbox.add(new OutboxEntry(j2, jSONObject, k02 != null ? k02.timestamp : System.currentTimeMillis(), (k0 == null || (str3 = k0.sender) == null) ? "" : str3, (k0 == null || (str2 = k0.type) == null) ? "" : str2, (k0 == null || (str = k0.text) == null) ? "" : str, k0 != null ? k0.deleted : false));
         saveOutbox();
-        O0 o0 = this.messageAdapter;
+        ChatAndMediaAdapter o0 = this.messageAdapter;
         if (o0 != null) {
             o0.notifyDataSetChanged();
         } else {
@@ -2373,7 +2373,7 @@ public final class ChatScreen {
         }
         saveQuickReaction(optString);
         updateSendButton();
-        C0029h0 c0029h0 = this.quickReactionRefresher;
+        QuickReactionRefresher c0029h0 = this.quickReactionRefresher;
         if (c0029h0 != null) {
             c0029h0.a();
         }
@@ -2408,9 +2408,9 @@ public final class ChatScreen {
                 mediaPlayer2.setDataSource(file.getPath());
                 this.audioPlayer = mediaPlayer2;
                 this.playingMessageId = j2;
-                C1 c1 = (C1) hashMap.get(Long.valueOf(j2));
+                ChatIconView c1 = (ChatIconView) hashMap.get(Long.valueOf(j2));
                 if (c1 != null) {
-                    c1.set("load");
+                    c1.setIcon("load");
                 }
                 mediaPlayer2.setOnPreparedListener(new MediaPlayer.OnPreparedListener() { 
                     @Override 
@@ -2425,9 +2425,9 @@ public final class ChatScreen {
                                 textView.setText(ChatScreen.formatSpeed(chatScreen.playbackSpeed));
                                 textView.setVisibility(0);
                             }
-                            C1 c12 = (C1) chatScreen.playButtons.get(Long.valueOf(j3));
+                            ChatIconView c12 = (ChatIconView) chatScreen.playButtons.get(Long.valueOf(j3));
                             if (c12 != null) {
-                                c12.set("pause");
+                                c12.setIcon("pause");
                             }
                             chatScreen.handler.post(chatScreen.playbackTickRunnable);
                         }
@@ -2470,22 +2470,22 @@ public final class ChatScreen {
         }
         try {
             boolean isPlaying = mediaPlayer.isPlaying();
-            X0 x0 = this.playbackTickRunnable;
+            ChatTimerRunnable x0 = this.playbackTickRunnable;
             Handler handler = this.handler;
             if (isPlaying) {
                 mediaPlayer.pause();
-                C1 c12 = (C1) hashMap.get(Long.valueOf(j2));
+                ChatIconView c12 = (ChatIconView) hashMap.get(Long.valueOf(j2));
                 if (c12 != null) {
-                    c12.set("play");
+                    c12.setIcon("play");
                 }
                 handler.removeCallbacks(x0);
                 return;
             }
             mediaPlayer.start();
             applyPlaybackSpeed(mediaPlayer, j2);
-            C1 c13 = (C1) hashMap.get(Long.valueOf(j2));
+            ChatIconView c13 = (ChatIconView) hashMap.get(Long.valueOf(j2));
             if (c13 != null) {
-                c13.set("pause");
+                c13.setIcon("pause");
             }
             handler.post(x0);
         } catch (Exception unused3) {
@@ -2503,20 +2503,20 @@ public final class ChatScreen {
     }
 
     public final void showMediaPicker() {
-        C0036j c0036j = new C0036j(this, 4);
-        C0017e0 c0017e0 = new C0017e0(this, 0);
+        ChatScreenAction c0036j = new ChatScreenAction(this, 4);
+        MediaPickerContent c0017e0 = new MediaPickerContent(this, 0);
         boolean z = this.lightBars;
         Activity activity = this.activity;
-        final B1 b1 = new B1(activity, z, c0036j, c0017e0);
+        final MediaPicker b1 = new MediaPicker(activity, z, c0036j, c0017e0);
         b1.quickReactions = !m.m.F(this.username, this.groupId);
         Dialog dialog = new Dialog(activity, R.style.Theme.Black.NoTitleBar);
-        b1.f41r = dialog;
+        b1.pickerDialog = dialog;
         Window window = dialog.getWindow();
-        int i2 = b1.f30e;
+        int i2 = b1.bgColor;
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(i2));
         }
-        Dialog dialog2 = b1.f41r;
+        Dialog dialog2 = b1.pickerDialog;
         if (dialog2 == null) {
             i.b.g("dlg");
             throw null;
@@ -2526,7 +2526,7 @@ public final class ChatScreen {
             window2.setSoftInputMode(16);
         }
         FrameLayout frameLayout = new FrameLayout(activity);
-        b1.f42s = frameLayout;
+        b1.rootView = frameLayout;
         frameLayout.setBackgroundColor(i2);
         LinearLayout linearLayout = new LinearLayout(activity);
         linearLayout.setOrientation(1);
@@ -2534,21 +2534,21 @@ public final class ChatScreen {
         linearLayout2.setGravity(16);
         linearLayout2.setPadding(b1.e(4), b1.e(6), b1.e(12), b1.e(6));
         FrameLayout frameLayout2 = new FrameLayout(activity);
-        int i3 = b1.f31f;
+        int i3 = b1.textColor;
         frameLayout2.addView(new IconView(activity, "back", i3, 2.4f), new FrameLayout.LayoutParams(b1.e(26), b1.e(26), 17));
-        frameLayout2.setOnClickListener(new ViewOnClickListenerC0058o1(b1, 6));
+        frameLayout2.setOnClickListener(new MediaPickerClickListener(b1, 6));
         linearLayout2.addView(frameLayout2, new LinearLayout.LayoutParams(b1.e(48), b1.e(48)));
         LinearLayout linearLayout3 = new LinearLayout(activity);
         linearLayout3.setGravity(16);
-        b1.f43t = b1.l("Gallery", 22.0f, i3, true);
-        b1.f44u = new IconView(activity, "down", i3, 2.6f);
-        TextView textView = b1.f43t;
+        b1.titleView = b1.l("Gallery", 22.0f, i3, true);
+        b1.chevronIcon = new IconView(activity, "down", i3, 2.6f);
+        TextView textView = b1.titleView;
         if (textView == null) {
             i.b.g("titleTv");
             throw null;
         }
         linearLayout3.addView(textView, new LinearLayout.LayoutParams(-2, -2));
-        IconView g1 = b1.f44u;
+        IconView g1 = b1.chevronIcon;
         if (g1 == null) {
             i.b.g("chev");
             throw null;
@@ -2556,65 +2556,65 @@ public final class ChatScreen {
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(b1.e(22), b1.e(22));
         layoutParams.leftMargin = b1.e(4);
         linearLayout3.addView(g1, layoutParams);
-        linearLayout3.setOnClickListener(new ViewOnClickListenerC0058o1(b1, 7));
+        linearLayout3.setOnClickListener(new MediaPickerClickListener(b1, 7));
         linearLayout2.addView(linearLayout3, new LinearLayout.LayoutParams(-2, b1.e(48)));
         linearLayout.addView(linearLayout2, new LinearLayout.LayoutParams(-1, -2));
         View view = new View(activity);
-        view.setBackgroundColor(b1.f33h);
+        view.setBackgroundColor(b1.dividerColor);
         linearLayout.addView(view, new LinearLayout.LayoutParams(-1, 1));
         FrameLayout frameLayout3 = new FrameLayout(activity);
         GridView gridView = new GridView(activity);
-        b1.f45v = gridView;
+        b1.gridView = gridView;
         gridView.setNumColumns(3);
-        GridView gridView2 = b1.f45v;
+        GridView gridView2 = b1.gridView;
         if (gridView2 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView2.setHorizontalSpacing(b1.e(2));
-        GridView gridView3 = b1.f45v;
+        GridView gridView3 = b1.gridView;
         if (gridView3 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView3.setVerticalSpacing(b1.e(2));
-        GridView gridView4 = b1.f45v;
+        GridView gridView4 = b1.gridView;
         if (gridView4 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView4.setStretchMode(2);
-        GridView gridView5 = b1.f45v;
+        GridView gridView5 = b1.gridView;
         if (gridView5 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView5.setPadding(b1.e(2), b1.e(2), b1.e(2), b1.e(90));
-        GridView gridView6 = b1.f45v;
+        GridView gridView6 = b1.gridView;
         if (gridView6 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView6.setClipToPadding(false);
-        GridView gridView7 = b1.f45v;
+        GridView gridView7 = b1.gridView;
         if (gridView7 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView7.setSelector(new ColorDrawable(0));
-        GridView gridView8 = b1.f45v;
+        GridView gridView8 = b1.gridView;
         if (gridView8 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView8.setBackgroundColor(i2);
-        GridView gridView9 = b1.f45v;
+        GridView gridView9 = b1.gridView;
         if (gridView9 == null) {
             i.b.g("grid");
             throw null;
         }
         gridView9.setAdapter((ListAdapter) b1.J);
-        GridView gridView10 = b1.f45v;
+        GridView gridView10 = b1.gridView;
         if (gridView10 == null) {
             i.b.g("grid");
             throw null;
@@ -2630,10 +2630,10 @@ public final class ChatScreen {
         }
         frameLayout3.addView(textView2, new FrameLayout.LayoutParams(-2, -2, 17));
         FrameLayout frameLayout4 = new FrameLayout(activity);
-        frameLayout4.setBackground(B1.h(-1));
+        frameLayout4.setBackground(MediaPicker.circleDrawable(-1));
         frameLayout4.setElevation(b1.e(6));
-        frameLayout4.addView(new C0046l1(activity, "cam", -16777216, -1), new FrameLayout.LayoutParams(b1.e(30), b1.e(30), 17));
-        frameLayout4.setOnClickListener(new ViewOnClickListenerC0058o1(b1, 3));
+        frameLayout4.addView(new EditorIconView(activity, "cam", -16777216, -1), new FrameLayout.LayoutParams(b1.e(30), b1.e(30), 17));
+        frameLayout4.setOnClickListener(new MediaPickerClickListener(b1, 3));
         b1.y = frameLayout4;
         FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(b1.e(60), b1.e(60), 81);
         layoutParams2.bottomMargin = b1.e(18);
@@ -2650,7 +2650,7 @@ public final class ChatScreen {
             throw null;
         }
         GradientDrawable gradientDrawable = new GradientDrawable();
-        gradientDrawable.setColor(b1.f32g);
+        gradientDrawable.setColor(b1.surfaceColor);
         gradientDrawable.setCornerRadius(b1.e(8));
         textView3.setBackground(gradientDrawable);
         TextView textView4 = b1.A;
@@ -2658,7 +2658,7 @@ public final class ChatScreen {
             i.b.g("prevBtn");
             throw null;
         }
-        textView4.setOnClickListener(new ViewOnClickListenerC0058o1(b1, 4));
+        textView4.setOnClickListener(new MediaPickerClickListener(b1, 4));
         TextView l4 = b1.l("Send", 19.0f, -1, true);
         b1.B = l4;
         l4.setGravity(17);
@@ -2676,7 +2676,7 @@ public final class ChatScreen {
             i.b.g("sendBtn");
             throw null;
         }
-        textView6.setOnClickListener(new ViewOnClickListenerC0058o1(b1, 5));
+        textView6.setOnClickListener(new MediaPickerClickListener(b1, 5));
         LinearLayout linearLayout5 = b1.z;
         if (linearLayout5 == null) {
             i.b.g("bar");
@@ -2751,25 +2751,25 @@ public final class ChatScreen {
         }
         frameLayout3.addView(scrollView5, new FrameLayout.LayoutParams(-1, -1));
         linearLayout.addView(frameLayout3, new LinearLayout.LayoutParams(-1, 0, 1.0f));
-        FrameLayout frameLayout5 = b1.f42s;
+        FrameLayout frameLayout5 = b1.rootView;
         if (frameLayout5 == null) {
             i.b.g("top");
             throw null;
         }
         frameLayout5.addView(linearLayout, new FrameLayout.LayoutParams(-1, -1));
-        Dialog dialog3 = b1.f41r;
+        Dialog dialog3 = b1.pickerDialog;
         if (dialog3 == null) {
             i.b.g("dlg");
             throw null;
         }
-        FrameLayout frameLayout6 = b1.f42s;
+        FrameLayout frameLayout6 = b1.rootView;
         if (frameLayout6 == null) {
             i.b.g("top");
             throw null;
         }
         dialog3.setContentView(frameLayout6);
         b1.scrollToReplyTarget(false);
-        Dialog dialog4 = b1.f41r;
+        Dialog dialog4 = b1.pickerDialog;
         if (dialog4 == null) {
             i.b.g("dlg");
             throw null;
@@ -2780,7 +2780,7 @@ public final class ChatScreen {
                 if (i4 != 4 || keyEvent.getAction() != 1) {
                     return false;
                 }
-                B1 b12 = B1.this;
+                MediaPicker b12 = MediaPicker.this;
                 if (b12.D != null) {
                     b12.d();
                     return true;
@@ -2794,7 +2794,7 @@ public final class ChatScreen {
                     b12.j(Boolean.FALSE);
                     return true;
                 }
-                Dialog dialog5 = b12.f41r;
+                Dialog dialog5 = b12.pickerDialog;
                 if (dialog5 != null) {
                     dialog5.dismiss();
                     return true;
@@ -2803,14 +2803,14 @@ public final class ChatScreen {
                 throw null;
             }
         });
-        Dialog dialog5 = b1.f41r;
+        Dialog dialog5 = b1.pickerDialog;
         if (dialog5 == null) {
             i.b.g("dlg");
             throw null;
         }
-        dialog5.setOnDismissListener(new DialogInterfaceOnDismissListenerC0033i0(1, b1));
+        dialog5.setOnDismissListener(new SharedOnDismissListener(1, b1));
         if (b1.quickReactions) {
-            Dialog dialog6 = b1.f41r;
+            Dialog dialog6 = b1.pickerDialog;
             if (dialog6 == null) {
                 i.b.g("dlg");
                 throw null;
@@ -2820,7 +2820,7 @@ public final class ChatScreen {
                 window3.addFlags(8192);
             }
         }
-        Dialog dialog7 = b1.f41r;
+        Dialog dialog7 = b1.pickerDialog;
         if (dialog7 == null) {
             i.b.g("dlg");
             throw null;
@@ -2928,10 +2928,10 @@ public final class ChatScreen {
                 boolean z3 = ChatMedia;
                 j2 = optLong;
                 HashMap hashMap2 = this.reactionTimestamps;
-                L0 l0 = (L0) hashMap2.get(Long.valueOf(j6));
+                PendingReaction l0 = (PendingReaction) hashMap2.get(Long.valueOf(j6));
                 if (l0 != null) {
                     j3 = optLong2;
-                    long currentTimeMillis = System.currentTimeMillis() - l0.f189b;
+                    long currentTimeMillis = System.currentTimeMillis() - l0.sentAtMs;
                     Iterator it3 = arrayList.iterator();
                     while (true) {
                         boolean hasNext = it3.hasNext();
@@ -2949,11 +2949,11 @@ public final class ChatScreen {
                     if (bVar2 == null || (str2 = (String) bVar2.f765b) == null) {
                         str2 = "";
                     }
-                    String str4 = l0.f188a;
-                    if (str2.equals(str4) || ((l0.f190c && currentTimeMillis > 4000) || currentTimeMillis > 25000)) {
+                    String str4 = l0.emoji;
+                    if (str2.equals(str4) || ((l0.acknowledged && currentTimeMillis > 4000) || currentTimeMillis > 25000)) {
                         hashMap2.remove(Long.valueOf(j6));
                     } else {
-                        c.h.G(arrayList, new C0086x(this, 1));
+                        c.h.G(arrayList, new ChatGestureFunction(this, 1));
                         if (str4.length() > 0) {
                             arrayList.add(new b.b(str, str4));
                         }
@@ -2991,7 +2991,7 @@ public final class ChatScreen {
     }
 
     public final void unregisterNetworkCallback() {
-        C0002a1 c0002a1 = this.networkCallback;
+        ChatNetworkCallback c0002a1 = this.networkCallback;
         if (c0002a1 == null) {
             return;
         }
@@ -3004,11 +3004,11 @@ public final class ChatScreen {
         }
     }
 
-    public final void applyTheme(C0022f1 c0022f1) {
+    public final void applyTheme(ChatTheme c0022f1) {
         EditText editText;
         if (this.messageInput == null || i.b.a(this.recordState, "idle")) {
             this.palette = c0022f1;
-            String str = c0022f1.f481a;
+            String str = c0022f1.id;
             SharedPreferences sharedPreferences = AppState.prefs;
             if (sharedPreferences == null) {
                 i.b.g("sp");
@@ -3031,13 +3031,13 @@ public final class ChatScreen {
                 throw null;
             }
             boolean hasFocus = editText3.hasFocus();
-            I2 i2 = this.messageList;
+            ChatListView i2 = this.messageList;
             if (i2 == null) {
                 i.b.g("lv");
                 throw null;
             }
             final int firstVisiblePosition = i2.getFirstVisiblePosition();
-            I2 i22 = this.messageList;
+            ChatListView i22 = this.messageList;
             if (i22 == null) {
                 i.b.g("lv");
                 throw null;
@@ -3119,7 +3119,7 @@ public final class ChatScreen {
             }
             updateSendButton();
             refreshHeader();
-            I2 i23 = this.messageList;
+            ChatListView i23 = this.messageList;
             if (i23 == null) {
                 i.b.g("lv");
                 throw null;
@@ -3130,7 +3130,7 @@ public final class ChatScreen {
                     boolean ChatMedia = z;
                     ChatScreen chatScreen = this;
                     if (!ChatMedia) {
-                        I2 i24 = chatScreen.messageList;
+                        ChatListView i24 = chatScreen.messageList;
                         if (i24 != null) {
                             i24.setSelectionFromTop(firstVisiblePosition, top);
                             return;
@@ -3139,7 +3139,7 @@ public final class ChatScreen {
                             throw null;
                         }
                     }
-                    I2 i25 = chatScreen.messageList;
+                    ChatListView i25 = chatScreen.messageList;
                     if (i25 == null) {
                         i.b.g("lv");
                         throw null;
@@ -3154,8 +3154,8 @@ public final class ChatScreen {
             });
             ActivityRef activityRef = this.activityRef;
             if (activityRef != null) {
-                int i4 = isDarkBg() ? this.palette.f486f : this.bgColor;
-                boolean ChatMedia = isDarkBg() ? this.palette.q : !this.lightBars;
+                int i4 = isDarkBg() ? this.palette.navigationBarColor : this.bgColor;
+                boolean ChatMedia = isDarkBg() ? this.palette.lightBars : !this.lightBars;
                 int i5 = MainActivity.R;
                 MainActivity mainActivity = activityRef.activity;
                 mainActivity.e(0, i4, ChatMedia);
@@ -3164,7 +3164,7 @@ public final class ChatScreen {
                     view.setBackgroundColor(i4);
                 }
             }
-            C0029h0 c0029h0 = this.quickReactionRefresher;
+            QuickReactionRefresher c0029h0 = this.quickReactionRefresher;
             if (c0029h0 != null) {
                 c0029h0.a();
             }
@@ -3178,7 +3178,7 @@ public final class ChatScreen {
             throw null;
         }
         boolean R = m.e.R(editText.getText().toString());
-        C1 c1 = this.endGlyph;
+        ChatIconView c1 = this.endGlyph;
         if (c1 == null) {
             i.b.g("endGlyph");
             throw null;
@@ -3192,7 +3192,7 @@ public final class ChatScreen {
                 throw null;
             }
             textView.setVisibility(8);
-            C1 c12 = this.endGlyph;
+            ChatIconView c12 = this.endGlyph;
             if (c12 == null) {
                 i.b.g("endGlyph");
                 throw null;
@@ -3211,7 +3211,7 @@ public final class ChatScreen {
                 throw null;
             }
             textView3.setVisibility(0);
-            C1 c13 = this.endGlyph;
+            ChatIconView c13 = this.endGlyph;
             if (c13 == null) {
                 i.b.g("endGlyph");
                 throw null;
@@ -3256,10 +3256,10 @@ public final class ChatScreen {
         if (optString.length() == 0) {
             optString = "default";
         }
-        if (optString.equals(this.palette.f481a)) {
+        if (optString.equals(this.palette.id)) {
             return;
         }
-        applyTheme(AbstractC0026g1.a(optString));
+        applyTheme(ChatThemeCatalog.byId(optString));
     }
 
     
@@ -3346,11 +3346,11 @@ public final class ChatScreen {
         }
     }
 
-    public final N2 buildChatView() {
+    public final ThemedBackgroundView buildChatView() {
         DisplayMetrics displayMetrics = this.activity.getResources().getDisplayMetrics();
         int i2 = (int) (displayMetrics.widthPixels * 0.5f);
         int i3 = (int) (displayMetrics.heightPixels * 0.5f);
-        return new N2(this.activity, isDarkBg() ? this.palette : null, this.bgColor, i2 < 200 ? 200 : i2, i3 < 300 ? 300 : i3);
+        return new ThemedBackgroundView(this.activity, isDarkBg() ? this.palette : null, this.bgColor, i2 < 200 ? 200 : i2, i3 < 300 ? 300 : i3);
     }
 
     public final LinearLayout dialogColumn(Dialog dialog, String str) {
@@ -3387,11 +3387,11 @@ public final class ChatScreen {
         return linearLayout;
     }
 
-    public final E2 showBottomSheet(boolean z, h.c cVar) {
+    public final SlideDownDialog showBottomSheet(boolean z, h.c cVar) {
         Activity activity = this.activity;
-        E2 e2 = new E2(activity);
+        SlideDownDialog e2 = new SlideDownDialog(activity);
         e2.requestWindowFeature(1);
-        C0042k1 c0042k1 = new C0042k1(activity, new RefAction(0, e2));
+        SwipeDownSheetLayout c0042k1 = new SwipeDownSheetLayout(activity, new RefAction(0, e2));
         float ChatMedia = dp(21.0f);
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setColor(this.panelColor);
@@ -3420,7 +3420,7 @@ public final class ChatScreen {
         if (z && window != null) {
             window.setSoftInputMode(20);
         }
-        e2.f84a = c0042k1;
+        e2.sheetView = c0042k1;
         c0042k1.setTranslationY(activity.getResources().getDisplayMetrics().heightPixels);
         showDialogThemed(e2);
         c0042k1.post(new ViewAnimTask(c0042k1, 0));
@@ -3514,15 +3514,15 @@ public final class ChatScreen {
         TextView textView;
         boolean z10;
         int i9 = this.sendBlue;
-        int i10 = z ? isDarkBg() ? this.palette.f490j : i9 : isDarkBg() ? this.palette.f492l : this.mediaPlaceholderColor;
+        int i10 = z ? isDarkBg() ? this.palette.ownBubbleGradientStart : i9 : isDarkBg() ? this.palette.otherBubbleColor : this.mediaPlaceholderColor;
         int i11 = this.textColor;
-        int i12 = z ? -1 : isDarkBg() ? this.palette.f493m : i11;
+        int i12 = z ? -1 : isDarkBg() ? this.palette.otherBubbleTextColor : i11;
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setColor(i10);
         if (z && isDarkBg()) {
             gradientDrawable.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
-            C0022f1 c0022f1 = this.palette;
-            gradientDrawable.setColors(new int[]{c0022f1.f490j, c0022f1.f491k});
+            ChatTheme c0022f1 = this.palette;
+            gradientDrawable.setColors(new int[]{c0022f1.ownBubbleGradientStart, c0022f1.ownBubbleGradientEnd});
         }
         gradientDrawable.setCornerRadii(bubbleCorners(z, ChatMedia, z3, 19.0f));
         if (!k0.deleted) {
@@ -3536,7 +3536,7 @@ public final class ChatScreen {
                 case 3321751:
                     activity = activity3;
                     if (str.equals("like")) {
-                        C1 M = makeIcon("likebig", isDarkBg() ? this.palette.f491k : i9, 43);
+                        ChatIconView M = makeIcon("likebig", isDarkBg() ? this.palette.ownBubbleGradientEnd : i9, 43);
                         ?? frameLayout = new FrameLayout(activity);
                         frameLayout.setClipChildren(false);
                         float f2 = 43;
@@ -3669,7 +3669,7 @@ public final class ChatScreen {
                                             i5 = i7;
                                             activity2 = activity3;
                                             i3 = i8;
-                                            linearLayout2.addView(mediaImage(str4, cornerRadii(z19, z20, z8, z9), 800, null, new A0(this, list2, k0, 1)), new LinearLayout.LayoutParams(i3, i23));
+                                            linearLayout2.addView(mediaImage(str4, cornerRadii(z19, z20, z8, z9), 800, null, new ReactionAction(this, list2, k0, 1)), new LinearLayout.LayoutParams(i3, i23));
                                             z5 = z11;
                                             z7 = z12;
                                             z6 = z13;
@@ -3696,14 +3696,14 @@ public final class ChatScreen {
                                             LinearLayout linearLayout3 = linearLayout;
                                             z6 = z13;
                                             i6 = i24;
-                                            linearLayout3.addView(mediaImage(str5, cornerRadii(z21, false, false, z4), 480, null, new A0(this, list2, k0, 2)), new LinearLayout.LayoutParams(i6, i6));
+                                            linearLayout3.addView(mediaImage(str5, cornerRadii(z21, false, false, z4), 480, null, new ReactionAction(this, list2, k0, 2)), new LinearLayout.LayoutParams(i6, i6));
                                             LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(i6, i6);
                                             layoutParams2.leftMargin = i4;
                                             String str6 = (String) list2.get(1);
                                             boolean z22 = z17 && z12;
                                             z7 = z12;
                                             viewGroup = linearLayout3;
-                                            viewGroup.addView(mediaImage(str6, cornerRadii(false, z22, z18 && z14, false), 480, null, new A0(this, list2, k0, 3)), layoutParams2);
+                                            viewGroup.addView(mediaImage(str6, cornerRadii(false, z22, z18 && z14, false), 480, null, new ReactionAction(this, list2, k0, 3)), layoutParams2);
                                         }
                                         LinearLayout.LayoutParams layoutParams3 = new LinearLayout.LayoutParams(i3, -2);
                                         if (i5 > 0) {
@@ -3729,7 +3729,7 @@ public final class ChatScreen {
                             ?? frameLayout2 = new FrameLayout(activity4);
                             frameLayout2.addView(k1, new FrameLayout.LayoutParams(-2, -2));
                             float f7 = 46;
-                            frameLayout2.addView(new F2(activity4), new FrameLayout.LayoutParams(dp(f7), dp(f7), 17));
+                            frameLayout2.addView(new LoadingSpinnerView(activity4), new FrameLayout.LayoutParams(dp(f7), dp(f7), 17));
                             textView = frameLayout2;
                             break;
                         } else {
@@ -3757,13 +3757,13 @@ public final class ChatScreen {
                         }
                         String str8 = str7;
                         FrameLayout frameLayout3 = new FrameLayout(activity3);
-                        ImageView Q2 = mediaImage(str8, cornerRadii(z23, z24, z26, z25), 800, new B0(this, frameLayout3, 1), new C0005b0(this, k0, 5));
+                        ImageView DoubleTapZoomListener = mediaImage(str8, cornerRadii(z23, z24, z26, z25), 800, new ImageAspectCallback(this, frameLayout3, 1), new MessageAction(this, k0, 5));
                         Float f8 = (Float) ChatMedia.aspectRatios.get(str8);
-                        LinearLayout.LayoutParams U0 = f8 != null ? mediaLayoutParams(f8.floatValue()) : new LinearLayout.LayoutParams(dp(166), dp(200));
-                        frameLayout3.addView(Q2, new FrameLayout.LayoutParams(-1, -1));
+                        LinearLayout.LayoutParams MemberComparator = f8 != null ? mediaLayoutParams(f8.floatValue()) : new LinearLayout.LayoutParams(dp(166), dp(200));
+                        frameLayout3.addView(DoubleTapZoomListener, new FrameLayout.LayoutParams(-1, -1));
                         if (hashSet.contains(Long.valueOf(j2))) {
                             float f9 = 46;
-                            frameLayout3.addView(new F2(activity3), new FrameLayout.LayoutParams(dp(f9), dp(f9), 17));
+                            frameLayout3.addView(new LoadingSpinnerView(activity3), new FrameLayout.LayoutParams(dp(f9), dp(f9), 17));
                         } else {
                             FrameLayout frameLayout4 = new FrameLayout(activity3);
                             frameLayout4.setBackground(circleDrawable(-1290003426));
@@ -3788,7 +3788,7 @@ public final class ChatScreen {
                         }
                         ?? P = rowLayout();
                         P.setClipChildren(z10);
-                        P.addView(frameLayout3, U0);
+                        P.addView(frameLayout3, MemberComparator);
                         textView = P;
                         break;
                     }
@@ -3810,7 +3810,7 @@ public final class ChatScreen {
                         float f14 = 9;
                         P2.setPadding(dp(13.5f), dp(f14), dp(15), dp(f14));
                         int i26 = z ? -1 : i11;
-                        C1 M2 = makeIcon("play", i26, 30);
+                        ChatIconView M2 = makeIcon("play", i26, 30);
                         float f15 = 30;
                         LinearLayout.LayoutParams X = layoutParamsDefault(this, dp(f15), dp(f15), 0, 0, 0, 60);
                         X.rightMargin = dp(8.5f);
@@ -3837,7 +3837,7 @@ public final class ChatScreen {
                         f16.setPadding(dp(f17), dp(f18), dp(f17), dp(f18));
                         f16.setBackground(roundedDrawable((16777215 & i26) | 939524096, 9.0f, 0, 0.0f));
                         f16.setVisibility(this.playingMessageId == j2 ? 0 : 8);
-                        setClickAction(f16, new C0036j(this, 13));
+                        setClickAction(f16, new ChatScreenAction(this, 13));
                         k12.addView(f16, layoutParams(-2, -2, 0, 3, 0, 0));
                         P2.addView(k12, layoutParams(dp(48), -2, 8, 0, 0, 0));
                         this.playButtons.put(Long.valueOf(j2), M2);
@@ -3850,9 +3850,9 @@ public final class ChatScreen {
                             } catch (Exception unused) {
                             }
                         } else if (this.previewMessageId == j2) {
-                            M2.set("load");
+                            M2.setIcon("load");
                         }
-                        setClickAction(M2, new C0005b0(this, k0, 3));
+                        setClickAction(M2, new MessageAction(this, k0, 3));
                         String str9 = (String) c.b.I(list);
                         if (str9 != null && !m.m.K(str9, "L") && !isOffline()) {
                             File c2 = ChatMedia.mediaFile(str9);
@@ -3860,7 +3860,7 @@ public final class ChatScreen {
                                 HashSet hashSet2 = this.prefetchingIds;
                                 if (hashSet2.add(str9)) {
                                     try {
-                                        this.prefetchExecutor.execute(new RunnableC0032i(str9, this, 0));
+                                        this.prefetchExecutor.execute(new ProfileOrPrefetchRunnable(str9, this, 0));
                                     } catch (Exception unused2) {
                                         hashSet2.remove(str9);
                                     }
@@ -3905,7 +3905,7 @@ public final class ChatScreen {
             textView = f19;
         }
         if (k0.deleted || isLocalMessage(k0)) {
-            textView.setOnLongClickListener(new ViewOnLongClickListenerC0065q0());
+            textView.setOnLongClickListener(new NoopLongClickListener());
         } else {
             attachLongPressMenu(textView, k0);
         }
@@ -3940,7 +3940,7 @@ public final class ChatScreen {
         frameLayout3.addView(makeIcon("download", -1, 26), new FrameLayout.LayoutParams(dp(f3), dp(f3), 17));
         P.addView(frameLayout3, layoutParamsDefault(this, dp(f4), dp(f4), 0, 0, 0, 60));
         k1.addView(P, new LinearLayout.LayoutParams(-1, -2));
-        R2 r2 = new R2(activity);
+        ZoomableImageView r2 = new ZoomableImageView(activity);
         r2.setBackgroundColor(-16777216);
         ChatMedia.loadInto(r2, str, 1600, null);
         k1.addView(r2, new LinearLayout.LayoutParams(-1, 0, 1.0f));
@@ -3952,7 +3952,7 @@ public final class ChatScreen {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-2, -2, 81);
         layoutParams.bottomMargin = dp(84);
         frameLayout.addView(f1, layoutParams);
-        final RunnableC0064q runnableC0064q = new RunnableC0064q(f1, 0);
+        final HideTextRunnable runnableC0064q = new HideTextRunnable(f1, 0);
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() { 
             @Override 
             public final void onDismiss(DialogInterface dialogInterface) {
@@ -4007,13 +4007,13 @@ public final class ChatScreen {
         float f2 = 9;
         float f3 = 8;
         P.setPadding(dp(2), dp(f2) + this.topInset, dp(f3), dp(f2));
-        P.setBackgroundColor(isDarkBg() ? this.palette.f494n : 0);
+        P.setBackgroundColor(isDarkBg() ? this.palette.headerBarColor : 0);
         this.headerBar = P;
         Activity activity = this.activity;
         FrameLayout frameLayout = new FrameLayout(activity);
         float f4 = 26;
         frameLayout.addView(new IconView(activity, "back", titleTextColor(), 2.4f), new FrameLayout.LayoutParams(dp(f4), dp(f4), 17));
-        setClickAction(frameLayout, new C0036j(this, 21));
+        setClickAction(frameLayout, new ChatScreenAction(this, 21));
         float f5 = 44;
         P.addView(frameLayout, layoutParamsDefault(this, dp(f5), dp(f5), 0, 0, 0, 60));
         AvatarView a2 = new AvatarView(activity);
@@ -4043,7 +4043,7 @@ public final class ChatScreen {
         P.addView(k12, new LinearLayout.LayoutParams(0, -2, 1.0f));
         FrameLayout frameLayout2 = new FrameLayout(activity);
         frameLayout2.addView(makeIcon("gear", titleTextColor(), 26), new FrameLayout.LayoutParams(dp(f4), dp(f4), 17));
-        setClickAction(frameLayout2, new C0036j(this, 1));
+        setClickAction(frameLayout2, new ChatScreenAction(this, 1));
         float f7 = 40;
         P.addView(frameLayout2, layoutParamsDefault(this, dp(f7), dp(f7), 0, 0, 0, 60));
         k1.addView(P, layoutParamsDefault(this, -1, -2, 0, 0, 0, 60));
@@ -4060,7 +4060,7 @@ public final class ChatScreen {
         }
         boolean L = isDarkBg();
         int i2 = this.bgColor;
-        linearLayout.setBackgroundColor(L ? this.palette.f495o : i2);
+        linearLayout.setBackgroundColor(L ? this.palette.barBackgroundColor : i2);
         LinearLayout linearLayout2 = this.netBar;
         if (linearLayout2 == null) {
             i.b.g("netBar");
@@ -4105,72 +4105,72 @@ public final class ChatScreen {
         }
         k1.addView(view2, layoutParamsDefault(this, -1, -2, 0, 0, 0, 60));
         FrameLayout frameLayout5 = new FrameLayout(activity);
-        I2 i22 = new I2(activity);
+        ChatListView i22 = new ChatListView(activity);
         this.messageList = i22;
-        i22.setHook(new C0086x(this, 0));
-        I2 i23 = this.messageList;
+        i22.setHook(new ChatGestureFunction(this, 0));
+        ChatListView i23 = this.messageList;
         if (i23 == null) {
             i.b.g("lv");
             throw null;
         }
         i23.setDivider(null);
-        I2 i24 = this.messageList;
+        ChatListView i24 = this.messageList;
         if (i24 == null) {
             i.b.g("lv");
             throw null;
         }
         i24.setDividerHeight(0);
-        I2 i25 = this.messageList;
+        ChatListView i25 = this.messageList;
         if (i25 == null) {
             i.b.g("lv");
             throw null;
         }
         i25.setSelector(new ColorDrawable(0));
-        I2 i26 = this.messageList;
+        ChatListView i26 = this.messageList;
         if (i26 == null) {
             i.b.g("lv");
             throw null;
         }
         i26.setCacheColorHint(0);
-        I2 i27 = this.messageList;
+        ChatListView i27 = this.messageList;
         if (i27 == null) {
             i.b.g("lv");
             throw null;
         }
         i27.setVerticalScrollBarEnabled(false);
-        I2 i28 = this.messageList;
+        ChatListView i28 = this.messageList;
         if (i28 == null) {
             i.b.g("lv");
             throw null;
         }
         i28.setClipToPadding(false);
-        I2 i29 = this.messageList;
+        ChatListView i29 = this.messageList;
         if (i29 == null) {
             i.b.g("lv");
             throw null;
         }
         i29.setPadding(0, dp(f3), 0, dp(f9));
-        O0 o0 = new O0(0, this);
+        ChatAndMediaAdapter o0 = new ChatAndMediaAdapter(0, this);
         this.messageAdapter = o0;
-        I2 i210 = this.messageList;
+        ChatListView i210 = this.messageList;
         if (i210 == null) {
             i.b.g("lv");
             throw null;
         }
         i210.setAdapter((ListAdapter) o0);
-        I2 i211 = this.messageList;
+        ChatListView i211 = this.messageList;
         if (i211 == null) {
             i.b.g("lv");
             throw null;
         }
-        i211.setOnScrollListener(new P0(this));
-        I2 i212 = this.messageList;
+        i211.setOnScrollListener(new ChatScrollListener(this));
+        ChatListView i212 = this.messageList;
         if (i212 == null) {
             i.b.g("lv");
             throw null;
         }
         i212.addOnLayoutChangeListener(new LayoutTask(0, this));
-        I2 i213 = this.messageList;
+        ChatListView i213 = this.messageList;
         if (i213 == null) {
             i.b.g("lv");
             throw null;
@@ -4214,7 +4214,7 @@ public final class ChatScreen {
         k1.addView(view3, layoutParamsDefault(this, -1, -2, 0, 0, 0, 60));
         LinearLayout P3 = rowLayout();
         this.replyBar = P3;
-        P3.setBackgroundColor(isDarkBg() ? this.palette.f495o : i2);
+        P3.setBackgroundColor(isDarkBg() ? this.palette.barBackgroundColor : i2);
         LinearLayout linearLayout6 = this.replyBar;
         if (linearLayout6 == null) {
             i.b.g("replyBar");
@@ -4253,7 +4253,7 @@ public final class ChatScreen {
         FrameLayout frameLayout6 = new FrameLayout(activity);
         float f18 = 18;
         frameLayout6.addView(new IconView(activity, "close", themedSubTextColor(), 2.2f), new FrameLayout.LayoutParams(dp(f18), dp(f18), 17));
-        setClickAction(frameLayout6, new C0036j(this, 2));
+        setClickAction(frameLayout6, new ChatScreenAction(this, 2));
         LinearLayout linearLayout8 = this.replyBar;
         if (linearLayout8 == null) {
             i.b.g("replyBar");
@@ -4298,22 +4298,22 @@ public final class ChatScreen {
         k1.addView(view8, layoutParamsDefault(this, -1, 1, 0, 0, 0, 60));
         FrameLayout frameLayout7 = new FrameLayout(activity);
         this.inputHolder = frameLayout7;
-        frameLayout7.setBackgroundColor(isDarkBg() ? this.palette.f495o : 0);
+        frameLayout7.setBackgroundColor(isDarkBg() ? this.palette.barBackgroundColor : 0);
         LinearLayout P4 = rowLayout();
         P4.setPadding(0, dp(f2), dp(5), dp(f3));
         FrameLayout frameLayout8 = new FrameLayout(activity);
         frameLayout8.addView(makeIcon("image", headerBgColor(), 30), new FrameLayout.LayoutParams(dp(f11), dp(f11), 17));
-        setClickAction(frameLayout8, new C0036j(this, 7));
+        setClickAction(frameLayout8, new ChatScreenAction(this, 7));
         this.imageButton = frameLayout8;
         float f20 = 46;
         P4.addView(frameLayout8, layoutParamsDefault(this, dp(f20), dp(f20), 0, 0, 0, 60));
         FrameLayout frameLayout9 = new FrameLayout(activity);
         frameLayout9.addView(makeIcon("mic", headerBgColor(), 30), new FrameLayout.LayoutParams(dp(f11), dp(f11), 17));
-        setClickAction(frameLayout9, new C0036j(this, 8));
+        setClickAction(frameLayout9, new ChatScreenAction(this, 8));
         this.micButton = frameLayout9;
         P4.addView(frameLayout9, layoutParamsDefault(this, dp(f20), dp(f20), 0, 0, 0, 60));
         LinearLayout P5 = rowLayout();
-        P5.setBackground(roundedDrawable(isDarkBg() ? this.palette.p : this.faceBaseColor, 24.0f, 0, 0.0f));
+        P5.setBackground(roundedDrawable(isDarkBg() ? this.palette.inputPillColor : this.faceBaseColor, 24.0f, 0, 0.0f));
         P5.setPadding(dp(19), 0, dp(1), 0);
         P5.setMinimumHeight(dp(47));
         this.inputPill = P5;
@@ -4367,7 +4367,7 @@ public final class ChatScreen {
             i.b.g("input");
             throw null;
         }
-        editText9.setOnClickListener(new ViewOnClickListenerC0074t(3, this));
+        editText9.setOnClickListener(new DialogDismissClickListener(3, this));
         EditText editText10 = this.messageInput;
         if (editText10 == null) {
             i.b.g("input");
@@ -4401,14 +4401,14 @@ public final class ChatScreen {
         P5.addView(editText12, new LinearLayout.LayoutParams(0, -2, 1.0f));
         FrameLayout frameLayout10 = new FrameLayout(activity);
         frameLayout10.addView(makeIcon("face", headerBgColor(), 30), new FrameLayout.LayoutParams(dp(f11), dp(f11), 17));
-        setClickAction(frameLayout10, new C0036j(this, 9));
+        setClickAction(frameLayout10, new ChatScreenAction(this, 9));
         float f21 = 38;
         P5.addView(frameLayout10, layoutParamsDefault(this, dp(f21), dp(f21), 0, 0, 0, 60));
         LinearLayout.LayoutParams X = layoutParamsDefault(this, 0, -2, 0, 0, 0, 60);
         X.weight = 1.0f;
         P4.addView(P5, X);
         this.endButton = new FrameLayout(activity);
-        C1 M = makeIcon("like", headerBgColor(), 30);
+        ChatIconView M = makeIcon("like", headerBgColor(), 30);
         this.endGlyph = M;
         FrameLayout frameLayout11 = this.endButton;
         if (frameLayout11 == null) {
@@ -4447,7 +4447,7 @@ public final class ChatScreen {
             i.b.g("btnEnd");
             throw null;
         }
-        setClickAction(frameLayout13, new C0036j(this, 10));
+        setClickAction(frameLayout13, new ChatScreenAction(this, 10));
         View view9 = this.endButton;
         if (view9 == null) {
             i.b.g("btnEnd");
@@ -4467,7 +4467,7 @@ public final class ChatScreen {
             throw null;
         }
         k1.addView(view10, layoutParamsDefault(this, -1, -2, 0, 0, 0, 60));
-        LinearLayout o2 = buildComposerRow(new C0086x(this, 2), new C0036j(this, 3));
+        LinearLayout o2 = buildComposerRow(new ChatGestureFunction(this, 2), new ChatScreenAction(this, 3));
         this.emojiPanel = o2;
         o2.setVisibility(8);
         View view11 = this.emojiPanel;
@@ -4481,7 +4481,7 @@ public final class ChatScreen {
         return k1;
     }
 
-    public final LinearLayout buildComposerRow(C0086x c0086x, C0036j c0036j) {
+    public final LinearLayout buildComposerRow(ChatGestureFunction c0086x, ChatScreenAction c0036j) {
         LinearLayout k1 = columnLayout();
         int i2 = this.bgColor;
         k1.setBackgroundColor(i2);
@@ -4495,7 +4495,7 @@ public final class ChatScreen {
         FrameLayout frameLayout = new FrameLayout(activity);
         frameLayout.setBackground(roundedDrawable(z ? -12960964 : -2894117, 22.0f, 0, 0.0f));
         int i3 = this.textColor;
-        C1 M = makeIcon("smile", i3, 26);
+        ChatIconView M = makeIcon("smile", i3, 26);
         M.setCut(z ? -12960964 : -2894117);
         float f3 = 26;
         frameLayout.addView(M, new FrameLayout.LayoutParams(dp(f3), dp(f3), 17));
@@ -4505,11 +4505,11 @@ public final class ChatScreen {
         FrameLayout frameLayout2 = new FrameLayout(activity);
         int i4 = this.subTextColor;
         frameLayout2.addView(makeIcon("sticker", i4, 26), new FrameLayout.LayoutParams(dp(f3), dp(f3), 17));
-        setClickAction(frameLayout2, new C0036j(this, 11));
+        setClickAction(frameLayout2, new ChatScreenAction(this, 11));
         P.addView(frameLayout2, layoutParamsDefault(this, dp(f4), dp(f5), 0, 0, 30, 32));
         FrameLayout frameLayout3 = new FrameLayout(activity);
         frameLayout3.addView(makeIcon("gif", i4, 26), new FrameLayout.LayoutParams(dp(f3), dp(f3), 17));
-        setClickAction(frameLayout3, new C0036j(this, 12));
+        setClickAction(frameLayout3, new ChatScreenAction(this, 12));
         P.addView(frameLayout3, layoutParamsDefault(this, dp(f4), dp(f5), 0, 0, 0, 60));
         k1.addView(P, layoutParamsDefault(this, -1, -2, 0, 0, 0, 60));
         FrameLayout frameLayout4 = new FrameLayout(activity);
@@ -4521,7 +4521,7 @@ public final class ChatScreen {
         listView.setVerticalScrollBarEnabled(false);
         listView.setClipToPadding(false);
         listView.setPadding(dp(f2), 0, dp(f2), dp(64));
-        listView.setAdapter((ListAdapter) new Q0(C, this, c0086x));
+        listView.setAdapter((ListAdapter) new EmojiPanelAdapter(C, this, c0086x));
         frameLayout4.addView(listView, new FrameLayout.LayoutParams(-1, -1));
         FrameLayout frameLayout5 = new FrameLayout(activity);
         frameLayout5.setBackground(circleDrawable(i2));
@@ -4535,17 +4535,17 @@ public final class ChatScreen {
         return k1;
     }
 
-    public final TextView nameText(String str, boolean z, C0022f1 c0022f1) {
-        TextView f1 = makeText(str, 18.0f, z ? -1 : c0022f1.f484d ? this.textColor : c0022f1.f493m, false);
+    public final TextView nameText(String str, boolean z, ChatTheme c0022f1) {
+        TextView f1 = makeText(str, 18.0f, z ? -1 : c0022f1.isDefault ? this.textColor : c0022f1.otherBubbleTextColor, false);
         f1.setPadding(dp(16.0f), dp(11.0f), dp(16.0f), dp(11.0f));
         f1.setMaxWidth(dp(270.0f));
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setCornerRadius(dp(20.0f));
-        if (!z || c0022f1.f484d) {
-            gradientDrawable.setColor(z ? this.sendBlue : c0022f1.f484d ? this.mediaPlaceholderColor : c0022f1.f492l);
+        if (!z || c0022f1.isDefault) {
+            gradientDrawable.setColor(z ? this.sendBlue : c0022f1.isDefault ? this.mediaPlaceholderColor : c0022f1.otherBubbleColor);
         } else {
             gradientDrawable.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
-            gradientDrawable.setColors(new int[]{c0022f1.f490j, c0022f1.f491k});
+            gradientDrawable.setColors(new int[]{c0022f1.ownBubbleGradientStart, c0022f1.ownBubbleGradientEnd});
         }
         f1.setBackground(gradientDrawable);
         return f1;
@@ -4554,9 +4554,9 @@ public final class ChatScreen {
     public final void resetPlayIcon() {
         long j2 = this.previewMessageId;
         if (j2 != Long.MIN_VALUE) {
-            C1 c1 = (C1) this.playButtons.get(Long.valueOf(j2));
+            ChatIconView c1 = (ChatIconView) this.playButtons.get(Long.valueOf(j2));
             if (c1 != null) {
-                c1.set("play");
+                c1.setIcon("play");
             }
             this.previewMessageId = Long.MIN_VALUE;
         }
@@ -4620,7 +4620,7 @@ public final class ChatScreen {
         FrameLayout frameLayout = new FrameLayout(this.activity);
         int i3 = this.chipColor;
         frameLayout.setBackground(circleDrawable(i3));
-        C1 M = makeIcon(str, i2, 21);
+        ChatIconView M = makeIcon(str, i2, 21);
         if (str.equals("themes")) {
             M.setCut(i3);
         }
@@ -4726,10 +4726,10 @@ public final class ChatScreen {
         }
         long j2 = k0.id;
         hashMap.put(Long.valueOf(j2), arrayList2);
-        L0 l0 = new L0(str, System.currentTimeMillis());
+        PendingReaction l0 = new PendingReaction(str, System.currentTimeMillis());
         this.reactionTimestamps.put(Long.valueOf(j2), l0);
         applyScroll(false);
-        new Thread(new K((Object) k0, str, (Object) this, (Object) l0, 0)).start();
+        new Thread(new QuadTaskRunnable((Object) k0, str, (Object) this, (Object) l0, 0)).start();
     }
 
     public final void showConfirmDialog(String str, String str2, String str3, String str4, final h.a aVar) {
@@ -4808,7 +4808,7 @@ public final class ChatScreen {
         listView.setOverScrollMode(2);
         listView.setPadding(0, 0, 0, dp(24));
         listView.setClipToPadding(false);
-        listView.setAdapter((ListAdapter) new Y0(arrayList, obj, this, dialog, bVar));
+        listView.setAdapter((ListAdapter) new EmojiPickerAdapter(arrayList, obj, this, dialog, bVar));
         LinearLayout k1 = columnLayout();
         FrameLayout frameLayout = new FrameLayout(activity);
         View view = new View(activity);
@@ -4818,14 +4818,14 @@ public final class ChatScreen {
         frameLayout.addView(view, layoutParams);
         k1.addView(frameLayout, layoutParamsDefault(this, -1, dp(24.0f), 0, 0, 0, 60));
         k1.addView(listView, new LinearLayout.LayoutParams(-1, 0, 1.0f));
-        D2 d2 = new D2(activity, listView, new C0060p(dialog, 2));
+        DraggableListSheetLayout d2 = new DraggableListSheetLayout(activity, listView, new C0060p(dialog, 2));
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setColor(this.bgColor);
         float ChatMedia = dp(21.0f);
         gradientDrawable.setCornerRadii(new float[]{ChatMedia, ChatMedia, ChatMedia, ChatMedia, 0.0f, 0.0f, 0.0f, 0.0f});
         d2.setBackground(gradientDrawable);
         d2.setClipToOutline(true);
-        d2.setOutlineProvider(new Z0(ChatMedia, 0));
+        d2.setOutlineProvider(new TopRoundedOutlineProvider(ChatMedia, 0));
         d2.addView(k1, new FrameLayout.LayoutParams(-1, -1));
         dialog.setContentView(d2);
         Window window = dialog.getWindow();
@@ -4841,7 +4841,7 @@ public final class ChatScreen {
         }
         d2.setTranslationY(i2);
         showDialogThemed(dialog);
-        d2.post(new L(d2, 0));
+        d2.post(new SheetSlideRunnable(d2, 0));
     }
 
     public final float[] cornerRadii(boolean z, boolean ChatMedia, boolean z3, boolean z4) {
@@ -4927,15 +4927,15 @@ public final class ChatScreen {
     
     public final void applyScroll(boolean z) {
         boolean ChatMedia;
-        O0 o0;
+        ChatAndMediaAdapter o0;
         if (!z) {
-            I2 i2 = this.messageList;
+            ChatListView i2 = this.messageList;
             if (i2 == null) {
                 i.b.g("lv");
                 throw null;
             }
             int lastVisiblePosition = i2.getLastVisiblePosition();
-            O0 o02 = this.messageAdapter;
+            ChatAndMediaAdapter o02 = this.messageAdapter;
             if (o02 == null) {
                 i.b.g("adapter");
                 throw null;
@@ -4949,30 +4949,30 @@ public final class ChatScreen {
                 }
                 o0.notifyDataSetChanged();
                 if (ChatMedia) {
-                    O0 o03 = this.messageAdapter;
+                    ChatAndMediaAdapter o03 = this.messageAdapter;
                     if (o03 == null) {
                         i.b.g("adapter");
                         throw null;
                     }
                     if (o03.getCount() > 0) {
                         this.stickToBottom = true;
-                        I2 i22 = this.messageList;
+                        ChatListView i22 = this.messageList;
                         if (i22 == null) {
                             i.b.g("lv");
                             throw null;
                         }
-                        O0 o04 = this.messageAdapter;
+                        ChatAndMediaAdapter o04 = this.messageAdapter;
                         if (o04 == null) {
                             i.b.g("adapter");
                             throw null;
                         }
                         i22.setSelection(o04.getCount() - 1);
-                        I2 i23 = this.messageList;
+                        ChatListView i23 = this.messageList;
                         if (i23 == null) {
                             i.b.g("lv");
                             throw null;
                         }
-                        i23.post(new RunnableC0048m(this, 11));
+                        i23.post(new ChatScreenRunnable(this, 11));
                     }
                 }
                 refreshHeader();
@@ -5002,7 +5002,7 @@ public final class ChatScreen {
         try {
             Object systemService = this.activity.getSystemService("connectivity");
             i.b.c(systemService, "null cannot be cast to non-null type android.net.ConnectivityManager");
-            C0002a1 c0002a1 = new C0002a1(this);
+            ChatNetworkCallback c0002a1 = new ChatNetworkCallback(this);
             ((ConnectivityManager) systemService).registerDefaultNetworkCallback(c0002a1);
             this.networkCallback = c0002a1;
         } catch (Exception unused) {

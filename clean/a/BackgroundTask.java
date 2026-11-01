@@ -73,9 +73,9 @@ public final class BackgroundTask implements Runnable {
                     chatScreen2.toggleVoicePlayback(j3, file2);
                     return;
                 }
-                C1 c1 = (C1) chatScreen2.playButtons.get(Long.valueOf(j3));
+                ChatIconView c1 = (ChatIconView) chatScreen2.playButtons.get(Long.valueOf(j3));
                 if (c1 != null) {
-                    c1.set("play");
+                    c1.setIcon("play");
                 }
                 chatScreen2.toaster.a(chatScreen2.isOffline() ? "No internet connection" : "Couldn't load the voice message, try again");
                 return;
@@ -108,7 +108,7 @@ public final class BackgroundTask implements Runnable {
                     long optLong = c5 != null ? c5.optLong("nat", 0L) : 0L;
                     if (apiResponse2.code == 429 && optLong > 0) {
                         chatScreen4.saveNameChangedAt(optLong);
-                        C0029h0 c0029h0 = chatScreen4.quickReactionRefresher;
+                        QuickReactionRefresher c0029h0 = chatScreen4.quickReactionRefresher;
                         if (c0029h0 != null) {
                             c0029h0.a();
                         }
@@ -120,14 +120,14 @@ public final class BackgroundTask implements Runnable {
                 JSONObject c6 = apiResponse2.json();
                 chatScreen4.saveNameChangedAt(c6 != null ? c6.optLong("nat", System.currentTimeMillis()) : System.currentTimeMillis());
                 chatScreen4.saveCache();
-                O0 o0 = chatScreen4.messageAdapter;
+                ChatAndMediaAdapter o0 = chatScreen4.messageAdapter;
                 if (o0 == null) {
                     i.b.g("adapter");
                     throw null;
                 }
                 o0.notifyDataSetChanged();
                 chatScreen4.refreshHeader();
-                C0029h0 c0029h02 = chatScreen4.quickReactionRefresher;
+                QuickReactionRefresher c0029h02 = chatScreen4.quickReactionRefresher;
                 if (c0029h02 != null) {
                     c0029h02.a();
                     return;

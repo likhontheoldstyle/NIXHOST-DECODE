@@ -39,14 +39,14 @@ public final class ActionCallback implements h.a {
         Object obj4 = this.second;
         switch (this.mode) {
             case 0:
-                RunnableC0064q runnableC0064q = (RunnableC0064q) ((Runnable) obj);
+                HideTextRunnable runnableC0064q = (HideTextRunnable) ((Runnable) obj);
                 TextView textView = (TextView) obj4;
                 textView.setText("Downloading...");
                 textView.setVisibility(0);
                 ChatScreen chatScreen = (ChatScreen) obj3;
                 chatScreen.handler.removeCallbacks(runnableC0064q);
                 chatScreen.handler.postDelayed(runnableC0064q, 2400L);
-                new Thread(new K(runnableC0064q, chatScreen, textView, (String) obj2)).start();
+                new Thread(new QuadTaskRunnable(runnableC0064q, chatScreen, textView, (String) obj2)).start();
                 break;
             case 1:
                 String obj5 = m.e.h0(((EditText) obj4).getText().toString()).toString();
@@ -63,11 +63,11 @@ public final class ActionCallback implements h.a {
                 ChatScreen chatScreen3 = (ChatScreen) obj3;
                 Runnable runnable = (Runnable) obj;
                 if (file == null) {
-                    ChatScreen.showTransientText((RunnableC0064q) runnable, chatScreen3, textView2, "Please wait, the video is loading");
+                    ChatScreen.showTransientText((HideTextRunnable) runnable, chatScreen3, textView2, "Please wait, the video is loading");
                 } else {
-                    RunnableC0064q runnableC0064q2 = (RunnableC0064q) runnable;
+                    HideTextRunnable runnableC0064q2 = (HideTextRunnable) runnable;
                     ChatScreen.showTransientText(runnableC0064q2, chatScreen3, textView2, "Downloading...");
-                    new Thread(new K(file, chatScreen3, textView2, runnableC0064q2, 3)).start();
+                    new Thread(new QuadTaskRunnable(file, chatScreen3, textView2, runnableC0064q2, 3)).start();
                 }
                 break;
             case 3:
@@ -103,7 +103,7 @@ public final class ActionCallback implements h.a {
                 } else if (i7 == 2) {
                     eVar.f847a = 0;
                     linearLayout.setVisibility(8);
-                    mainActivity.showCommitSheet(J0.a("Delete ", file2.getName()), new FileConfirmAction(file2, mainActivity, i2));
+                    mainActivity.showCommitSheet(StringPlus.stringPlus("Delete ", file2.getName()), new FileConfirmAction(file2, mainActivity, i2));
                 } else if (i7 == 3) {
                     if (file2.isFile()) {
                         String lowerCase = file2.getName().toLowerCase(Locale.ROOT);
@@ -143,7 +143,7 @@ public final class ActionCallback implements h.a {
         return b.d.f770c;
     }
 
-    public ActionCallback(i.g gVar, TextView textView, ChatScreen chatScreen, RunnableC0064q runnableC0064q) {
+    public ActionCallback(i.g gVar, TextView textView, ChatScreen chatScreen, HideTextRunnable runnableC0064q) {
         this.mode = 2;
         this.fourth = gVar;
         this.second = textView;

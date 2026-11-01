@@ -111,7 +111,7 @@ public abstract class ChatMedia {
     }
 
     public static File mediaFile(String str) {
-        return new File(cacheDir(), J0.a("m_", str));
+        return new File(cacheDir(), StringPlus.stringPlus("m_", str));
     }
 
     public static File cacheDir() {
@@ -129,7 +129,7 @@ public abstract class ChatMedia {
         Bitmap bitmap = (Bitmap) bitmapCache.get(str2);
         if (bitmap == null) {
             imageView.setImageDrawable(null);
-            executor.execute(new RunnableC0037j0(str, i2, str2, imageView, bVar));
+            executor.execute(new MultiWorkRunnable(str, i2, str2, imageView, bVar));
         } else {
             aspectRatios.put(str, Float.valueOf(bitmap.getWidth() / bitmap.getHeight()));
             imageView.setImageBitmap(bitmap);
@@ -150,6 +150,6 @@ public abstract class ChatMedia {
     }
 
     public static File videoFile(String str) {
-        return new File(cacheDir(), J0.a("v_", str));
+        return new File(cacheDir(), StringPlus.stringPlus("v_", str));
     }
 }

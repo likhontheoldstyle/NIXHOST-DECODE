@@ -76,11 +76,11 @@ public final class DialogContent implements h.c {
                 if (!dVar.f846a) {
                     View view = (View) obj5;
                     if (floatValue > 0.25f * max || floatValue2 > 1200.0f) {
-                        MainActivity.animateEmojiPanelClose((IconView) obj4, s2Var, view, (FrameLayout) obj3, this.activity, new C0(2), dVar);
+                        MainActivity.animateEmojiPanelClose((IconView) obj4, s2Var, view, (FrameLayout) obj3, this.activity, new ValueProvider(2), dVar);
                     } else {
                         ValueAnimator ofFloat = ValueAnimator.ofFloat(floatValue, 0.0f);
                         ofFloat.setDuration(180L);
-                        ofFloat.addUpdateListener(new J1(s2Var, view, max));
+                        ofFloat.addUpdateListener(new SheetSlideAnimatorListener(s2Var, view, max));
                         ofFloat.start();
                     }
                 }
