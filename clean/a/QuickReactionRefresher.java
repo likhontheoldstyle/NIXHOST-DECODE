@@ -11,7 +11,7 @@ public final class QuickReactionRefresher implements h.a {
     public final LinearLayout panel;
 
     public QuickReactionRefresher(ChatScreen chatScreen, LinearLayout linearLayout) {
-        this.mode = 0;
+        this.mode = 1;
         this.chatScreen = chatScreen;
         this.panel = linearLayout;
     }
@@ -31,7 +31,7 @@ public final class QuickReactionRefresher implements h.a {
     }
 
     public QuickReactionRefresher(LinearLayout linearLayout, ChatScreen chatScreen) {
-        this.mode = 1;
+        this.mode = 0;
         this.panel = linearLayout;
         this.chatScreen = chatScreen;
     }

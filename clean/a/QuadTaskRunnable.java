@@ -425,11 +425,9 @@ public final class QuadTaskRunnable implements Runnable {
                 TerminalSession terminalSession2 = (TerminalSession) this.second;
                 File file9 = (File) this.first;
                 String str10 = (String) this.fourth;
-                String str11 = "Stopped.";
-                TermuxPackageManager termuxPackageManager = TermuxPackageManager.INSTANCE;
+                str4 = "Stopped.";
                 RefAction refAction = new RefAction(2, terminalSession2);
                 ToastCallback toastCallback = new ToastCallback(3, terminalSession2);
-                str4 = "Stopped.";
                 try {
                     B2 = TermuxPackageManager.prefixDir();
                     if (!TermuxPackageManager.isPrefixRecorded()) {
@@ -440,338 +438,103 @@ public final class QuadTaskRunnable implements Runnable {
                     b.b s4 = TermuxPackageManager.fetchPackageIndex();
                     str5 = (String) s4.f764a;
                     H = TermuxPackageManager.resolveDependencies((Map) s4.f765b, (ArrayList) list2, TermuxPackageManager.readInstalled(B2));
-                    str6 = "clang?";
-                } catch (StoppedException unused3) {
-                    terminalSession = terminalSession2;
-                    file = file9;
-                    str = "";
-                    str4 = str;
-                    terminalSession.installing = false;
-                    file2 = file;
-                    terminalSession.finishRun();
-                    return;
-                } catch (Exception e2) {
-                    e = e2;
-                    terminalSession = terminalSession2;
-                    file = file9;
-                    str = "";
-                    str4 = "Failed: ".concat(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
-                    terminalSession.installing = false;
-                    file2 = file;
-                    terminalSession.finishRun();
-                    return;
-                } catch (OutOfMemoryError unused4) {
-                    terminalSession = terminalSession2;
-                    file = file9;
-                    str = "";
-                    str4 = "Failed: out of memory";
-                    terminalSession.installing = false;
-                    file2 = file;
-                    terminalSession.finishRun();
-                    return;
-                }
-                if (H.isEmpty()) {
-                    TermuxPackageManager.createPrefixSkeleton(B2, new ArrayList());
-                    TermuxPackageManager.recordPrefix();
-                    if (list2.contains("clang?")) {
-                        TermuxPackageManager.recordToolsVersion();
+                    if (H.isEmpty()) {
+                        TermuxPackageManager.createPrefixSkeleton(B2, new ArrayList());
+                        TermuxPackageManager.recordPrefix();
+                        if (list2.contains("clang?")) {
+                            TermuxPackageManager.recordToolsVersion();
+                        }
+                        str4 = "";
+                    } else {
+                        i.f fVar = new i.f();
+                        Iterator it2 = H.iterator();
+                        while (it2.hasNext()) {
+                            PackageEntry packageEntry2 = (PackageEntry) it2.next();
+                            long j5 = packageEntry2.size;
+                            fVar.f848a += j5 > 0 ? j5 : 1000000;
+                        }
+                        i.f fVar2 = new i.f();
+                        i.e eVar = new i.e();
+                        eVar.f847a = -1;
+                        TermuxPackageManager.reportProgress(fVar2, fVar, eVar, toastCallback, 0.0d);
+                        ArrayList arrayList4 = new ArrayList();
+                        Iterator it3 = H.iterator();
+                        while (it3.hasNext()) {
+                            PackageEntry packageEntry = (PackageEntry) it3.next();
+                            if (((Boolean) refAction.a()).booleanValue()) {
+                                throw new StoppedException();
+                            }
+                            j2 = packageEntry.size;
+                            if (j2 <= 0) {
+                                j2 = 1000000;
+                            }
+                            file3 = new File(B2, "var/cache/nixpkg/" + packageEntry.name + ".deb");
+                            boolean downloaded = false;
+                            try {
+                                TermuxPackageManager.downloadWithRetries(str5, packageEntry, file3, refAction, new DownloadProgressCallback(j2, fVar2, fVar, eVar, toastCallback));
+                                downloaded = true;
+                                TermuxPackageManager.reportProgress(fVar2, fVar, eVar, toastCallback, j2 * 0.6d);
+                                TermuxPackageManager.extractDeb(file3, B2, arrayList4, refAction);
+                            } catch (Throwable th0) {
+                                if (downloaded) {
+                                    file3.delete();
+                                }
+                                throw th0;
+                            }
+                            file3.delete();
+                            TermuxPackageManager.recordInstalled(B2, packageEntry);
+                            fVar2.f848a += j2;
+                            TermuxPackageManager.reportProgress(fVar2, fVar, eVar, toastCallback, 0.0d);
+                        }
+                        TermuxPackageManager.createPrefixSkeleton(B2, arrayList4);
+                        TermuxPackageManager.recordPrefix();
+                        if (list2.contains("clang?")) {
+                            TermuxPackageManager.recordToolsVersion();
+                        }
+                        toastCallback.a(100);
+                        str4 = "";
                     }
-                    file = file9;
-                    str4 = "";
-                    str = str4;
-                    str2 = str10;
-                    str3 = "Stopped.";
-                    terminalSession2.installing = false;
-                    if (str4.length() == 0 && !terminalSession2.installCancelled) {
-                        try {
-                            B = TermuxPackageManager.prefixDir();
-                            exists = new File(B, "bin/python3").exists();
-                        } catch (Exception unused5) {
-                            B = null;
-                            exists = false;
-                        }
-                        if (!new File(B, "bin/pip").exists() && !new File(B, "bin/pip3").exists()) {
-                            z2 = false;
-                            listFiles = new File(B, "lib").listFiles(new FileFilters(1));
-                            if (listFiles == null) {
-                                i.a a2 = i.j.a(listFiles);
-                                z3 = false;
-                                while (a2.hasNext()) {
-                                    if (new File((File) a2.next(), "site-packages/setuptools").isDirectory()) {
-                                        z3 = true;
-                                    }
-                                }
-                            } else {
-                                z3 = false;
-                            }
-                            if (exists && z2 && !z3) {
-                                terminalSession2.prompt = "Installing setuptools...";
-                                TerminalManager.INSTANCE.syncServiceState();
-                                file2 = file;
-                                terminalSession2.runShellCommand(file2, "python3 -m pip install --no-warn-script-location --disable-pip-version-check setuptools");
-                                if (str4.length() != 0 && str2 != null && !terminalSession2.installCancelled) {
-                                    String str12 = str2;
-                                    terminalSession2.prompt = terminalSession2.npmInstallPattern.b(str12) ? "Installing packages..." : str;
-                                    TerminalManager.INSTANCE.syncServiceState();
-                                    terminalSession2.runShellCommand(file2, str12);
-                                } else if (str4.length() != 0) {
-                                    terminalSession2.echo("Done.\n");
-                                } else if (!str4.equals(str3)) {
-                                    terminalSession2.echo(str4.concat("\n"));
-                                }
-                                terminalSession2.finishRun();
-                                return;
-                            }
-                        }
-                        z2 = true;
+                } catch (StoppedException unused3) {
+                    str4 = "Stopped.";
+                } catch (OutOfMemoryError unused4) {
+                    str4 = "Failed: out of memory";
+                } catch (Exception e2) {
+                    str4 = "Failed: ".concat(e2.getMessage() != null ? e2.getMessage() : e2.getClass().getSimpleName());
+                }
+                terminalSession2.installing = false;
+                if (str4.length() == 0 && !terminalSession2.installCancelled) {
+                    try {
+                        B = TermuxPackageManager.prefixDir();
+                        exists = new File(B, "bin/python3").exists();
+                        z2 = new File(B, "bin/pip").exists() || new File(B, "bin/pip3").exists();
+                        z3 = false;
                         listFiles = new File(B, "lib").listFiles(new FileFilters(1));
-                        if (listFiles == null) {
-                            i.a a22 = i.j.a(listFiles);
-                            z3 = false;
-                            while (a22.hasNext()) {
-                                if (new File((File) a22.next(), "site-packages/setuptools").isDirectory()) {
+                        if (listFiles != null) {
+                            for (File file11 : listFiles) {
+                                if (new File(file11, "site-packages/setuptools").isDirectory()) {
                                     z3 = true;
                                 }
                             }
-                        } else {
-                            z3 = false;
                         }
                         if (exists && z2 && !z3) {
                             terminalSession2.prompt = "Installing setuptools...";
                             TerminalManager.INSTANCE.syncServiceState();
-                            file2 = file;
-                            terminalSession2.runShellCommand(file2, "python3 -m pip install --no-warn-script-location --disable-pip-version-check setuptools");
-                            if (str4.length() != 0 && str2 != null && !terminalSession2.installCancelled) {
-                                String str12 = str2;
-                                terminalSession2.prompt = terminalSession2.npmInstallPattern.b(str12) ? "Installing packages..." : str;
-                                TerminalManager.INSTANCE.syncServiceState();
-                                terminalSession2.runShellCommand(file2, str12);
-                            } else if (str4.length() != 0) {
-                                terminalSession2.echo("Done.\n");
-                            } else if (!str4.equals(str3)) {
-                                terminalSession2.echo(str4.concat("\n"));
-                            }
-                            terminalSession2.finishRun();
-                            return;
+                            terminalSession2.runShellCommand(file9, "python3 -m pip install --no-warn-script-location --disable-pip-version-check setuptools");
                         }
+                    } catch (Exception unused5) {
                     }
-                    file2 = file;
-                    if (str4.length() != 0 && str2 != null && !terminalSession2.installCancelled) {
-                        String str12 = str2;
-                        terminalSession2.prompt = terminalSession2.npmInstallPattern.b(str12) ? "Installing packages..." : str;
-                        TerminalManager.INSTANCE.syncServiceState();
-                        terminalSession2.runShellCommand(file2, str12);
-                    } else if (str4.length() != 0) {
-                        terminalSession2.echo("Done.\n");
-                    } else if (!str4.equals(str3)) {
-                        terminalSession2.echo(str4.concat("\n"));
-                    }
-                    terminalSession2.finishRun();
-                    return;
                 }
-                i.f fVar = new i.f();
-                Iterator it2 = H.iterator();
-                while (true) {
-                    long j3 = 1000000;
-                    if (!it2.hasNext()) {
-                        String str13 = str6;
-                        String str14 = str5;
-                        i.f fVar2 = new i.f();
-                        i.e eVar = new i.e();
-                        eVar.f847a = -1;
-                        str = "";
-                        try {
-                            TermuxPackageManager.reportProgress(fVar2, fVar, eVar, toastCallback, 0.0d);
-                            ArrayList arrayList4 = new ArrayList();
-                            Iterator it3 = H.iterator();
-                            while (it3.hasNext()) {
-                                PackageEntry packageEntry = (PackageEntry) it3.next();
-                                if (((Boolean) refAction.a()).booleanValue()) {
-                                    throw new StoppedException();
-                                }
-                                terminalSession = terminalSession2;
-                                file = file9;
-                                try {
-                                    j2 = packageEntry.size;
-                                    it = it3;
-                                    if (j2 <= 0) {
-                                        j2 = 1000000;
-                                    }
-                                    arrayList = arrayList4;
-                                    String str15 = packageEntry.name;
-                                    StringBuilder sb = new StringBuilder();
-                                    str3 = str11;
-                                    try {
-                                        sb.append("var/cache/nixpkg/");
-                                        sb.append(str15);
-                                        sb.append(".deb");
-                                        file3 = new File(B2, sb.toString());
-                                        try {
-                                            list = list2;
-                                            str2 = str10;
-                                            try {
-                                                TermuxPackageManager.downloadWithRetries(str14, packageEntry, file3, refAction, new DownloadProgressCallback(j2, fVar2, fVar, eVar, toastCallback));
-                                                try {
-                                                    TermuxPackageManager.reportProgress(fVar2, fVar, eVar, toastCallback, j2 * 0.6d);
-                                                    TermuxPackageManager.extractDeb(file3, B2, arrayList, refAction);
-                                                } catch (Throwable th2) {
-                                                    th = th2;
-                                                    z4 = true;
-                                                    if (z4) {
-                                                        throw th;
-                                                    }
-                                                    file3.delete();
-                                                    throw th;
-                                                }
-                                            } catch (Throwable th3) {
-                                                th = th3;
-                                                z4 = false;
-                                                if (z4) {
-                                                    throw th;
-                                                }
-                                                file3.delete();
-                                                throw th;
-                                            }
-                                        } catch (Throwable th4) {
-                                            th = th4;
-                                            z4 = false;
-                                            if (z4) {
-                                                throw th;
-                                            }
-                                            file3.delete();
-                                            throw th;
-                                        }
-                                    } catch (StoppedException unused6) {
-                                        str2 = str10;
-                                        throw new StoppedException();
-                                    } catch (Exception e3) {
-                                        e = e3;
-                                        str2 = str10;
-                                        throw e;
-                                    } catch (OutOfMemoryError unused7) {
-                                        str2 = str10;
-                                        throw new OutOfMemoryError();
-                                    }
-                                } catch (StoppedException unused8) {
-                                    str2 = str10;
-                                    str3 = str11;
-                                    terminalSession2 = terminalSession;
-                                    str4 = str3;
-                                    terminalSession2.installing = false;
-                                    file2 = file;
-                                    terminalSession2.finishRun();
-                                    return;
-                                } catch (Exception e4) {
-                                    e = e4;
-                                    str2 = str10;
-                                    str3 = str11;
-                                    message = e.getMessage();
-                                    if (message == null) {
-                                        message = e.getClass().getSimpleName();
-                                    }
-                                    str4 = "Failed: ".concat(message);
-                                    terminalSession2 = terminalSession;
-                                    terminalSession2.installing = false;
-                                    file2 = file;
-                                    terminalSession2.finishRun();
-                                    return;
-                                } catch (OutOfMemoryError unused9) {
-                                    str2 = str10;
-                                    str3 = str11;
-                                    str4 = "Failed: out of memory";
-                                    terminalSession2 = terminalSession;
-                                    terminalSession2.installing = false;
-                                    file2 = file;
-                                    terminalSession2.finishRun();
-                                    return;
-                                }
-                                try {
-                                    file3.delete();
-                                    TermuxPackageManager.recordInstalled(B2, packageEntry);
-                                    fVar2.f848a += j2;
-                                    TermuxPackageManager.reportProgress(fVar2, fVar, eVar, toastCallback, 0.0d);
-                                    arrayList4 = arrayList;
-                                    terminalSession2 = terminalSession;
-                                    file9 = file;
-                                    it3 = it;
-                                    str11 = str3;
-                                    str10 = str2;
-                                    list2 = list;
-                                } catch (StoppedException unused10) {
-                                    terminalSession2 = terminalSession;
-                                    str4 = str3;
-                                    terminalSession2.installing = false;
-                                    file2 = file;
-                                    terminalSession2.finishRun();
-                                    return;
-                                } catch (Exception e5) {
-                                    e = e5;
-                                    message = e.getMessage();
-                                    if (message == null) {
-                                        message = e.getClass().getSimpleName();
-                                    }
-                                    str4 = "Failed: ".concat(message);
-                                    terminalSession2 = terminalSession;
-                                    terminalSession2.installing = false;
-                                    file2 = file;
-                                    terminalSession2.finishRun();
-                                    return;
-                                } catch (OutOfMemoryError unused11) {
-                                    str4 = "Failed: out of memory";
-                                    terminalSession2 = terminalSession;
-                                    terminalSession2.installing = false;
-                                    file2 = file;
-                                    terminalSession2.finishRun();
-                                    return;
-                                }
-                            }
-                            terminalSession = terminalSession2;
-                            file = file9;
-                            str2 = str10;
-                            str3 = str11;
-                            TermuxPackageManager.createPrefixSkeleton(B2, arrayList4);
-                            TermuxPackageManager.recordPrefix();
-                            if (list2.contains(str13)) {
-                                TermuxPackageManager.recordToolsVersion();
-                            }
-                            toastCallback.a(100);
-                            str4 = str;
-                        } catch (StoppedException unused12) {
-                            terminalSession = terminalSession2;
-                            file = file9;
-                            str4 = "Stopped.";
-                        } catch (Exception e6) {
-                            e = e6;
-                            terminalSession = terminalSession2;
-                            file = file9;
-                            message = e.getMessage();
-                            if (message == null) {
-                                message = e.getClass().getSimpleName();
-                            }
-                            str4 = "Failed: ".concat(message);
-                        } catch (OutOfMemoryError unused13) {
-                            terminalSession = terminalSession2;
-                            file = file9;
-                            str4 = "Failed: out of memory";
-                        }
-                        terminalSession2 = terminalSession;
-                        terminalSession2.installing = false;
-                        file2 = file;
-                        terminalSession2.finishRun();
-                        return;
-                    }
-                    PackageEntry packageEntry2 = (PackageEntry) it2.next();
-                    String str16 = str6;
-                    String str17 = str5;
-                    long j4 = fVar.f848a;
-                    long j5 = packageEntry2.size;
-                    if (j5 > 0) {
-                        j3 = j5;
-                    }
-                    fVar.f848a = j4 + j3;
-                    str6 = str16;
-                    str5 = str17;
+                if (str4.length() == 0 && str10 != null && !terminalSession2.installCancelled) {
+                    terminalSession2.prompt = terminalSession2.npmInstallPattern.b(str10) ? "Installing packages..." : "";
+                    TerminalManager.INSTANCE.syncServiceState();
+                    terminalSession2.runShellCommand(file9, str10);
+                } else if (str4.length() == 0) {
+                    terminalSession2.echo("Done.\n");
+                } else if (!str4.equals("Stopped.")) {
+                    terminalSession2.echo(str4.concat("\n"));
                 }
+                terminalSession2.finishRun();
+                return;
         }
     }
 

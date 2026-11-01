@@ -189,12 +189,13 @@ public final class HttpConnectionHandler implements Runnable {
                                     try {
                                         int orientation = new ExifInterface(exifStream).getAttributeInt("Orientation", 1);
                                         rotation = orientation != 3 ? orientation != 6 ? orientation != 8 ? 0 : 270 : 90 : 180;
-                                        try {
-                                            AppState.a(exifStream, null);
-                                        } catch (Exception unused3) {
-                                        }
+                                    } catch (Exception unused3) {
                                     } catch (Throwable th) {
                                         throw th;
+                                    }
+                                    try {
+                                        AppState.a(exifStream, null);
+                                    } catch (Exception unused4) {
                                     }
                                 }
                                 int side = Math.min(bitmap.getWidth(), bitmap.getHeight());
