@@ -268,78 +268,157 @@ below is exhaustive for `sources/` (258 files = 147 reconstructed + 108 library
 
 ## Reconstruction notes
 
-- `MainActivity.M` (showChat), `N` (showHome), `o` (onAccountStateChanged) and
-  `onBackPressed` were recovered by jadx with `--show-bad-code`; they are
-  reconstructed as single coherent passes (jadx duplicated some regions).
-- A few dispatcher classes (`SubmitAction`, `CommitAction`) show a constant mode
-  field for both constructors in the decompile; the mode is assigned per
-  constructor here, matching how each instance is used.
 - The tree mirrors the decompiled layout, including default-package helper
   classes; like the jadx output itself, it is a faithful source reconstruction
   rather than a guaranteed-compiling project (R8 artefacts such as
   default-package references and merged kotlin-stdlib members remain).
-- Pass 2 additions:
-  - `SortComparator.compare` (modes 0/1/2): jadx omitted the switch bodies;
-    the chat-message ordering (timestamp, then id tie-break) was recovered
-    from the two call sites, and mode 2 sorts `MediaItem` by `dateAdded`
-    descending — the descending direction is a judgement call, the one
-    ungrounded choice in this class. Modes 3/4 use the surviving
-    File-name comparison.
-  - `ChatSendRunnable`: the mode-1 JPEG compress loop was rebuilt around its
-    surviving constants (start quality 78, −15 per pass, threshold
-    1,300,000 bytes, floor 35), and the mode-1 photo-error branch condition
-    was restored as `bytes == null` (jadx rendered the success value in the
-    error branch — an apparently dropped negation). The mode-2 video path
-    was stitched from its skeleton; every constant and string comes from
-    the decompile.
-  - `QuadTaskRunnable` mode 8 (terminal `.deb` install) sits in the most
-    jadx-damaged region; its flow follows the rendered skeleton, two unnamed
-    locals were initialised in place, and collapsed empty catch tails were
-    filled with the same strings its fully rendered catches use
-    ("Stopped." / "Failed: …"). Treat mode 8 as approximate.
-  - `ChatSignalRunnable` mode 2: the sent-sound decay term referenced a
-    register jadx never assigned; a normalised decay envelope was
-    substituted — the one numeric expression in pass 2 not sourced from the
-    decompile.
-  - `ChatScreenRunnable` mode 3 was preserved exactly as decompiled,
-    including an outbox loop condition that looks inverted and an
-    unreachable tail; it was deliberately not "fixed".
-  - `SlideDownDialog` and `ChatListView`: jadx recovered no constructor;
-    the single-argument constructors were supplied from their call sites.
-    `SlideDownDialog.dismissImmediately` was reconstructed from a jadx
-    artefact that rendered a `super.dismiss()` call inside a static method.
-  - `ChatThemeCatalog.byId`: the fallback (fall back to the `"default"`
-    theme, else throw `NoSuchElementException` with the stdlib message) was
-    reconstructed; jadx rendered the method unrecognisably.
-  - `TermuxPackageManager`: `fetchPackageIndex` now parses the decompressed
-    stream (jadx passed the compressed stream to the parser, which cannot
-    have been the shipped behaviour); `extractTar` was rebuilt as a single
-    coherent loop and its regular-file routing includes the standard `'0'`
-    typeflag (the decompile's guard left `'0'` unrouted, which would
-    extract nothing — one added char literal against the decompile);
-    `extractDeb`'s stream handling was made coherent the same way.
-    Otherwise every string literal matches the decompile (machine-checked).
-  - Mode constants that jadx collapsed to a single value were restored per
-    constructor for `ChatSettingsClickListener` (name-submit vs
-    theme-apply), `SheetSlideAnimatorListener` (slide-in vs settle-back),
-    `QuickReactionRefresher`, `MessageDialogClickListener`,
-    `MultiWorkRunnable`, `MembersOrVideoResultRunnable`,
-    `SendAndPersistRunnable`, `ChatSendRunnable` and
-    `ProfileOrPrefetchRunnable`, using the surviving constructor shapes and
-    call sites.
-  - Duplicate switch arms in the decompile were preserved, not merged away:
-    `ReactionCallback` modes 0 = 1, `ReactionAction` modes 1 = 2,
-    `HideTextRunnable` modes 0 = 1, `FocusInputRunnable` modes 0 = 1,
-    `ValueFunction` modes 4 = 5, `ChatScreenRunnable` modes 2 = 12,
-    `MediaFilterClickListener` modes, and `TopRoundedOutlineProvider`'s two
-    branches.
-  - `MediaPicker.darkTheme` follows the picker's own internal colour
-    evidence (true = dark palette). The value originates from the ChatScreen
-    field pass 1 named `lightBars`, which is itself assigned from
-    `AppState.darkTheme`; the naming tension is noted, the logic unchanged.
-  - `VideoSeekBarListener.playingRef`'s name is inferred from its gating
-    role on `seekTo` at its single call site; `seekingRef` is certain.
-  - In pass-1 files, local variables that jadx happened to name with the
-    same letters as classes (e.g. a `LinearLayout` local named `P2`, a root
-    view named `V`) were left as-is: only class and member references were
-    aligned to the new names.
+- In pass-1 files, local variables that jadx happened to name with the
+  same letters as classes (e.g. a `LinearLayout` local named `P2`, a root
+  view named `V`) were left as-is: only class and member references were
+  aligned to the new names.
+
+## Verified against bytecode (smali)
+
+A later pass re-checked every uncertain reconstruction below against the
+DEX bytecode (baksmali disassembly of the original `classes.dex`); the
+bytecode, not the jadx output, is the ground truth. "Corrected" means the
+clean file was changed to match the bytecode.
+
+- `MainActivity` showChat (M): verified — full call/string skeleton, the
+  keep-screen-on flag (8192) condition (`window != null && !equals(username,
+  groupId)`), ToastCallback mode 2 / ActivityAction mode 7, and the cache
+  sort (`SortComparator(1)`, only when size > 1) all match the bytecode.
+- `MainActivity` showHome (N): verified — update/locked gates, and the
+  instance loop bound is a precomputed `online ? instances.length() : 0`
+  (the clean `if (online)` + `for (i < length)` form is equivalent); the
+  big logo is added only when online and the list is empty.
+- `MainActivity` onAccountStateChanged (o): **corrected** — the bytecode
+  passes `account != null && account.optBoolean("known", true)` to
+  showLocked (same expression as showHome); the clean file passed only
+  `account != null`. Everything else matched.
+- `MainActivity` onBackPressed: verified — the branch set and per-branch
+  actions match the bytecode (branch order among the mutually exclusive
+  screen-name checks differs in the rendering and is irrelevant).
+- `SyntaxHighlighter.highlight` (D1.a): **corrected in 4 places** — the
+  `/* */` comment gate is languages {0, 1} only (the clean file also
+  admitted 4); a preceding `'$'` also breaks a number's left boundary;
+  an empty HTML tag name paints nothing and does not set the in-tag flag;
+  a `.`-preceded word is painted member-colour only when followed by `(`
+  or by `=` not followed by `=`/`>`, otherwise literal colour. Language
+  detection, keyword/literal sets, colours and all other gates verified.
+- `TerminalSession` (K2): **corrected** — launchCommand's node/npm/npx
+  path now follows the bytecode (install defaults when the tools-version
+  stamp is not "5", run directly when it is); the constructor's boot-log /
+  run-file / cwd restore is wrapped so any failure skips the remaining
+  restore, and the cwd restore is gated on the saved path being the home
+  directory or under it (the clean file had a dead, unconditional restore);
+  the pkg handler's `list` and `upgrade` cases gained their missing
+  try/catch fallbacks. Also verified: `pkg update` really does dispatch
+  TaskRunnable mode 10, whose switch has no case 10 and falls through to
+  the package-index fetch; resolvePath/start/setCurrentDir match.
+- `SortComparator.compare` (N0): **corrected** — modes 0 and 1 are a single
+  comparison on `ChatMessage.id` (no timestamp, no tie-break; the pass-2
+  "timestamp, then id" body was wrong). Mode 2 is descending by
+  `MediaItem.dateAdded` (the pass-2 guess was right). Mode 3 + default are
+  the File-name comparison.
+- `ChatSendRunnable` (k): JPEG loop constants (78 start, −15, threshold
+  1,300,000, floor 35), the sample-size loop, EXIF mapping (3→180, 6→90,
+  8→270) and the `bytes == null` photo-error condition all verified.
+  **Corrected** the exception routing in both media modes: mode 1 per-item
+  failures now funnel to the "Could not read the photo" path instead of
+  propagating; mode 2's uriSize failure reports "Could not send the video"
+  (not "Could not read the video") and deletes the temp file, retriever
+  failures fall back to the placeholder thumbnail without setting an
+  error, upload-region failures funnel to "Could not send the video", and
+  the delete-temp-on-failure tail now runs on every failure path. Chunk
+  size (12,582,912), the 100 MB cap, frame selection (duration > 2500 →
+  frame at 1,000,000 µs, option 2), 720 scaling, fallback bitmap
+  (320×180, colour −14671580, JPEG 80) and the result-runnable argument
+  order all verified.
+- `QuadTaskRunnable` mode 8 (.deb install): **rewritten from the
+  bytecode** — the jadx rendering had dropped the shared finish tail from
+  the download-loop path (setuptools check, follow-up command, "Done."
+  echo), never echoed "Failed: …", inverted the setuptools directory-scan
+  null check, and inverted which failure deletes the downloaded .deb
+  (bytecode: download failures keep it, extract failures delete it). The
+  bytecode flow is: one result string ("Stopped." / "" /
+  "Failed: <message|class>" / "Failed: out of memory"), then a single tail
+  — installing=false; if the result is empty and not cancelled, install
+  setuptools when python3 + pip exist but setuptools is missing; then run
+  the follow-up command, or echo "Done.", or echo a non-"Stopped." result.
+- `TermuxPackageManager` (y2): all verified — `extractTar` routes exactly
+  {0, '0', '7'} to the regular-file branch, '5' directory, '1' hardlink,
+  '2' symlink, everything else skipped (packed-switch 0x30–0x32 plus the
+  0/'5'/'7' compares); `fetchPackageIndex` parses the decompressed stream
+  (the working register is reassigned to the XZ/GZIP wrapper before the
+  parse call) and tries Packages.xz, Packages.gz, Packages in that order;
+  `extractDeb` ar parsing (60-byte headers, size at 48/10, odd-size
+  padding, startsWith dispatch for .xz/.gz, exact match for plain
+  data.tar) matches.
+- `ChatNotifier.pollOnce` (e1.e): **corrected** — the sound plays only
+  when `getRingerMode() == 2` (the clean check was inverted and skipped
+  the sound in normal mode); `setLastModified` runs only on the
+  download-failed path, not after a successful write.
+- `ChatMedia.fetchMediaFile` (z2.b): verified — non-null bytes are
+  written and the file returned, write failure and null bytes return null
+  (bytecode `if-nez` polarity), and the prefs-null check now sits inside
+  the catch-Exception scope that returns null like the bytecode.
+- `ChatSignalRunnable` mode 2 (r0): **corrected** — the decay envelope is
+  `exp(-5.2 * (i / 5733))`; the pass-2 normalised substitute was wrong by
+  orders of magnitude. All other synthesis math (phase sweep 500→960 Hz,
+  attack `i / 264.6`, 0.22 second harmonic, 0.36 × 32767) verified.
+- `ChatScreenRunnable` mode 3 (m): **corrected** — the bytecode is a real
+  drain loop (repeat while the head entry exists and the response code is
+  neither 0 nor 401); the clean do/while returned unconditionally after
+  one pass. Now a loop with the single `outboxFlushing = false` tail.
+- `ChatThemeCatalog.byId` (g1.a): verified — first match on id, else the
+  `"default"` theme, else `NoSuchElementException("Collection contains no
+  element matching the predicate.")`.
+- `HttpConnectionHandler` (U): static-file 405 placement verified (GET /
+  HEAD only; 405 is the residual branch, not a post-serving fall-through).
+  Mode 1 (avatar): the sample loop and single EXIF flow verified as
+  reconstructed; **corrected** the EXIF parse-failure path — the bytecode
+  catches `Exception` from `ExifInterface`, keeps rotation 0 and
+  continues to crop/upload, where the clean file aborted to the error
+  toast.
+- Constructor mode constants, verified per constructor in smali and
+  matching the clean files: `SubmitAction` (0/1), `CommitAction` (1/0),
+  `ChatSettingsClickListener` (1/0), `SheetSlideAnimatorListener` (1/0),
+  `MessageDialogClickListener` (0/1), `MultiWorkRunnable` (1/0/2/3),
+  `MembersOrVideoResultRunnable` (1/0), `SendAndPersistRunnable` (1/0),
+  `ProfileOrPrefetchRunnable` (constant 1; other modes caller-supplied),
+  `ChatSendRunnable` (0/2/3/1/4), `BackgroundTask` (3 + parameterised).
+  **Corrected:** `QuickReactionRefresher` — the two constructor constants
+  were swapped; bytecode is (ChatScreen, LinearLayout) = 1 and
+  (LinearLayout, ChatScreen) = 0.
+- `ToastCallback` mode 0 (a0): **corrected** — far from empty, it is the
+  Boolean predicate `ChatMessage.id == OutboxEntry.id`, used by
+  BackgroundTask mode 2 as the `removeAll` predicate over the message
+  list. The clean `case 0` was an empty break returning Unit.
+- `BackgroundTask` mode 2 (o): verified — it builds ToastCallback mode 0
+  with the outbox entry and calls `c.h.G(messages, predicate)`
+  (removeAll); its call site and 401 handling match.
+- `SlideDownDialog` (E2) / `ChatListView` (I2): neither class has any
+  constructor in the bytecode — instances are allocated and the superclass
+  `(Context)` constructor is invoked directly at the call sites, so the
+  clean single-argument constructors are faithful reconstructions.
+  **Corrected:** `SlideDownDialog.dismissImmediately` invoked the virtual
+  `dismiss()`; the bytecode's static helper calls
+  `Dialog.dismiss()` via invoke-super unconditionally — the clean file
+  now routes through a `superDismiss()` helper (a source-level addition
+  the invoke-super bytecode requires; no other way to express it in Java).
+- Duplicate switch arms verified truly identical in bytecode and
+  preserved: `ReactionCallback` modes 0 = 1, `ReactionAction` modes 1 = 2,
+  `HideTextRunnable` modes 0 = 1, `FocusInputRunnable` modes 0 = 1,
+  `ValueFunction` modes 4 = 5, `ChatScreenRunnable` modes 2 = 12,
+  `MediaFilterClickListener` modes, and `TopRoundedOutlineProvider`'s two
+  branches.
+
+## Still uncertain (naming only — undecidable from bytecode)
+
+- `MediaPicker.darkTheme` follows the picker's own internal colour
+  evidence (true = dark palette). The value originates from the ChatScreen
+  field pass 1 named `lightBars`, which is itself assigned from
+  `AppState.darkTheme`; the naming tension is noted, the logic unchanged.
+- `VideoSeekBarListener.playingRef`'s name is inferred from its gating
+  role on `seekTo` at its single call site; `seekingRef` is certain.

@@ -31,7 +31,7 @@ public final class ChatSignalRunnable implements Runnable {
                         for (int i2 = 0; i2 < 5733; i2++) {
                             double d3 = i2;
                             d2 += (((460.0d * (d3 / 5733)) + 500.0d) * 6.283185307179586d) / 44100;
-                            sArr2[i2] = (short) (((Math.sin(2.0d * d2) * 0.22d) + Math.sin(d2)) * (d3 < 264.6d ? d3 / 264.6d : Math.exp((((d3 - 264.6d) / (5733 - 264.6d)) * 4.0d - 4.0d) * (-5.2d))) * 0.36d * 32767.0d);
+                            sArr2[i2] = (short) (((Math.sin(2.0d * d2) * 0.22d) + Math.sin(d2)) * (d3 < 264.6d ? d3 / 264.6d : Math.exp((d3 / 5733) * (-5.2d))) * 0.36d * 32767.0d);
                         }
                         SentSoundPlayer.sentSoundSamples = sArr2;
                         sArr = sArr2;

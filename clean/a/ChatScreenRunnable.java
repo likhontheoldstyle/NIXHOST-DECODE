@@ -45,23 +45,26 @@ public final class ChatScreenRunnable implements Runnable {
                 return;
             case 3:
                 ChatScreen chatScreen3 = this.chatScreen;
-                do {
+                while (true) {
                     synchronized (chatScreen3.outbox) {
                         outboxEntry = (OutboxEntry) c.b.I(chatScreen3.outbox);
                     }
-                    if (outboxEntry != null) {
-                        apiResponse = ApiClient.INSTANCE.sendChatMessage(outboxEntry.body);
-                        if (apiResponse.code != 0) {
-                            synchronized (chatScreen3.outbox) {
-                                chatScreen3.outbox.remove(outboxEntry);
-                            }
-                            chatScreen3.saveOutbox();
-                            chatScreen3.activity.runOnUiThread(new BackgroundTask(chatScreen3, apiResponse, outboxEntry, 2, (byte) 0));
-                        }
+                    if (outboxEntry == null) {
+                        break;
                     }
-                    chatScreen3.outboxFlushing = false;
-                    return;
-                } while (apiResponse.code != 401);
+                    apiResponse = ApiClient.INSTANCE.sendChatMessage(outboxEntry.body);
+                    if (apiResponse.code == 0) {
+                        break;
+                    }
+                    synchronized (chatScreen3.outbox) {
+                        chatScreen3.outbox.remove(outboxEntry);
+                    }
+                    chatScreen3.saveOutbox();
+                    chatScreen3.activity.runOnUiThread(new BackgroundTask(chatScreen3, apiResponse, outboxEntry, 2, (byte) 0));
+                    if (apiResponse.code == 401) {
+                        break;
+                    }
+                }
                 chatScreen3.outboxFlushing = false;
                 return;
             case 4:

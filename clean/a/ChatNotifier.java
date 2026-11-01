@@ -319,7 +319,7 @@ public final class ChatNotifier {
             }
             Object systemService = context.getSystemService("audio");
             i.b.c(systemService, "null cannot be cast to non-null type android.media.AudioManager");
-            if (((AudioManager) systemService).getRingerMode() == 2) {
+            if (((AudioManager) systemService).getRingerMode() != 2) {
                 return;
             }
             try {
@@ -328,8 +328,7 @@ public final class ChatNotifier {
                     byte[] e2 = ApiClient.downloadChatSound();
                     if (e2 != null && !(e2.length == 0)) {
                         g.m.K(file, e2);
-                    }
-                    if (file.isFile()) {
+                    } else if (file.isFile()) {
                         file.setLastModified(System.currentTimeMillis());
                     }
                 }

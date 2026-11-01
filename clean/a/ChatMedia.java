@@ -51,10 +51,6 @@ public abstract class ChatMedia {
     }
 
     public static File fetchMediaFile(String str) {
-        HttpURLConnection httpURLConnection;
-        String str2;
-        SharedPreferences sharedPreferences;
-        byte[] u2;
         File c2 = mediaFile(str);
         if (c2.exists() && c2.length() > 0) {
             return c2;
@@ -62,52 +58,55 @@ public abstract class ChatMedia {
         if (m.m.K(str, "L")) {
             return null;
         }
-        if (ApiClient.baseUrl.length() != 0) {
-            try {
-                URLConnection openConnection = new URL(ApiClient.baseUrl + "/chat/media/" + str).openConnection();
-                i.b.c(openConnection, "null cannot be cast to non-null type java.net.HttpURLConnection");
-                httpURLConnection = (HttpURLConnection) openConnection;
-                httpURLConnection.setConnectTimeout(15000);
-                httpURLConnection.setReadTimeout(60000);
-                httpURLConnection.setRequestProperty("User-Agent", "NixHost");
-                str2 = "";
-                sharedPreferences = AppState.prefs;
-            } catch (Exception unused) {
-                return null;
-            }
+        if (ApiClient.baseUrl.length() == 0) {
+            return null;
+        }
+        try {
+            URLConnection openConnection = new URL(ApiClient.baseUrl + "/chat/media/" + str).openConnection();
+            i.b.c(openConnection, "null cannot be cast to non-null type java.net.HttpURLConnection");
+            HttpURLConnection httpURLConnection = (HttpURLConnection) openConnection;
+            httpURLConnection.setConnectTimeout(15000);
+            httpURLConnection.setReadTimeout(60000);
+            httpURLConnection.setRequestProperty("User-Agent", "NixHost");
+            SharedPreferences sharedPreferences = AppState.prefs;
             if (sharedPreferences == null) {
                 i.b.g("sp");
                 throw null;
             }
             String string = sharedPreferences.getString("session", "");
+            String str2 = "";
             if (string != null) {
                 str2 = string;
             }
             httpURLConnection.setRequestProperty("Authorization", "Bearer ".concat(str2));
             int responseCode = httpURLConnection.getResponseCode();
             if (200 <= responseCode && responseCode < 300) {
+                byte[] u2;
+                InputStream inputStream = httpURLConnection.getInputStream();
                 try {
-                    InputStream inputStream = httpURLConnection.getInputStream();
+                    u2 = AppState.u(inputStream);
+                    AppState.a(inputStream, null);
+                } catch (Throwable th) {
                     try {
-                        u2 = AppState.u(inputStream);
-                        AppState.a(inputStream, null);
-                    } finally {
+                        throw th;
+                    } catch (Throwable th2) {
+                        AppState.a(inputStream, th);
+                        throw th2;
                     }
-                    if (u2 != null) {
-                        try {
-                            g.m.K(c2, u2);
-                            return c2;
-                        } catch (Exception unused2) {
-                            return null;
-                        }
+                }
+                if (u2 != null) {
+                    try {
+                        g.m.K(c2, u2);
+                        return c2;
+                    } catch (Exception unused2) {
+                        return null;
                     }
-                    return null;
-                } catch (Exception unused3) {
-                    return null;
                 }
             }
+            return null;
+        } catch (Exception unused) {
+            return null;
         }
-        return null;
     }
 
     public static File mediaFile(String str) {

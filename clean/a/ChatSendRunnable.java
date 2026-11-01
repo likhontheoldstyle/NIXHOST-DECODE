@@ -94,10 +94,9 @@ public final class ChatSendRunnable implements Runnable {
                     int i9 = i8 + 1;
                     Uri uri6 = (Uri) it.next();
                     Activity activity = chatScreen2.activity;
-                    BitmapFactory.Options options = null;
-                    int i2 = 1;
+                    byte[] bArr = null;
                     try {
-                        options = new BitmapFactory.Options();
+                        BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inJustDecodeBounds = true;
                         InputStream openInputStream2 = activity.getContentResolver().openInputStream(uri6);
                         if (openInputStream2 != null) {
@@ -113,10 +112,7 @@ public final class ChatSendRunnable implements Runnable {
                                 }
                             }
                         }
-                    } catch (Throwable unused2) {
-                    }
-                    byte[] bArr = null;
-                    if (options != null) {
+                        int i2 = 1;
                         while (true) {
                             int i10 = i2 * 2;
                             if (options.outWidth / i10 >= 1280 || options.outHeight / i10 >= 1280) {
@@ -185,6 +181,7 @@ public final class ChatSendRunnable implements Runnable {
                                 break;
                             }
                         }
+                    } catch (Throwable unused2) {
                     }
                     if (bArr == null) {
                         gVar.f850b = "Could not read the photo";
@@ -224,10 +221,20 @@ public final class ChatSendRunnable implements Runnable {
                 byte[] bArr4 = new byte[0];
                 File file9 = new File(ChatMedia.cacheDir(), "v_up_" + System.currentTimeMillis());
                 long l1 = 0;
+                boolean sizeThrew = false;
                 try {
                     l1 = chatScreen3.uriSize(uri7);
                 } catch (Throwable unused10) {
+                    sizeThrew = true;
+                }
+                if (sizeThrew) {
                     gVar2.f850b = "Could not send the video";
+                    try {
+                        file9.delete();
+                    } catch (Exception unused11) {
+                    }
+                    chatScreen3.activity.runOnUiThread(new MembersOrVideoResultRunnable(new i.d(), chatScreen3, j4, gVar3, arrayList3, eVar2, this.message, gVar2));
+                    return;
                 }
                 if (l1 > 0) {
                     if (l1 > 104857600) {
@@ -235,27 +242,37 @@ public final class ChatSendRunnable implements Runnable {
                     }
                     Activity activity2 = chatScreen3.activity;
                     if (((CharSequence) gVar2.f850b).length() == 0) {
-                        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+                        MediaMetadataRetriever mediaMetadataRetriever = null;
+                        byte[] bArr3 = null;
+                        boolean metaThrew = false;
                         try {
-                            mediaMetadataRetriever.setDataSource(activity2, uri7);
-                            String extractMetadata = mediaMetadataRetriever.extractMetadata(9);
-                            Integer C = extractMetadata != null ? m.l.C(extractMetadata) : null;
-                            int i5 = C != null ? C.intValue() : 0;
-                            eVar2.f847a = i5;
-                            Bitmap frameAtTime = mediaMetadataRetriever.getFrameAtTime(i5 > 2500 ? 1000000 : 0, 2);
-                            if (frameAtTime == null) {
-                                frameAtTime = mediaMetadataRetriever.getFrameAtTime(0L);
-                            }
-                            byte[] bArr3 = null;
-                            if (frameAtTime != null) {
-                                int max2 = Math.max(frameAtTime.getWidth(), frameAtTime.getHeight());
-                                if (max2 > 720) {
-                                    float f3 = 720.0f / max2;
-                                    frameAtTime = Bitmap.createScaledBitmap(frameAtTime, Math.max(1, (int) (frameAtTime.getWidth() * f3)), Math.max(1, (int) (frameAtTime.getHeight() * f3)), true);
+                            mediaMetadataRetriever = new MediaMetadataRetriever();
+                        } catch (Throwable unused18) {
+                            metaThrew = true;
+                        }
+                        if (!metaThrew) {
+                            try {
+                                mediaMetadataRetriever.setDataSource(activity2, uri7);
+                                String extractMetadata = mediaMetadataRetriever.extractMetadata(9);
+                                Integer C = extractMetadata != null ? m.l.C(extractMetadata) : null;
+                                int i5 = C != null ? C.intValue() : 0;
+                                eVar2.f847a = i5;
+                                Bitmap frameAtTime = mediaMetadataRetriever.getFrameAtTime(i5 > 2500 ? 1000000 : 0, 2);
+                                if (frameAtTime == null) {
+                                    frameAtTime = mediaMetadataRetriever.getFrameAtTime(0L);
                                 }
-                                ByteArrayOutputStream byteArrayOutputStream3 = new ByteArrayOutputStream();
-                                frameAtTime.compress(Bitmap.CompressFormat.JPEG, 78, byteArrayOutputStream3);
-                                bArr3 = byteArrayOutputStream3.toByteArray();
+                                if (frameAtTime != null) {
+                                    int max2 = Math.max(frameAtTime.getWidth(), frameAtTime.getHeight());
+                                    if (max2 > 720) {
+                                        float f3 = 720.0f / max2;
+                                        frameAtTime = Bitmap.createScaledBitmap(frameAtTime, Math.max(1, (int) (frameAtTime.getWidth() * f3)), Math.max(1, (int) (frameAtTime.getHeight() * f3)), true);
+                                    }
+                                    ByteArrayOutputStream byteArrayOutputStream3 = new ByteArrayOutputStream();
+                                    frameAtTime.compress(Bitmap.CompressFormat.JPEG, 78, byteArrayOutputStream3);
+                                    bArr3 = byteArrayOutputStream3.toByteArray();
+                                }
+                            } catch (Throwable unused19) {
+                                bArr3 = null;
                             }
                             try {
                                 mediaMetadataRetriever.release();
@@ -269,135 +286,148 @@ public final class ChatSendRunnable implements Runnable {
                                     createBitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream4);
                                     bArr3 = byteArrayOutputStream4.toByteArray();
                                 } catch (Throwable unused20) {
+                                    metaThrew = true;
                                 }
                             }
-                            if (bArr3 != null) {
-                                bArr4 = bArr3;
+                        }
+                        if (!metaThrew && bArr3 != null) {
+                            bArr4 = bArr3;
+                            try {
+                                g.m.K(ChatMedia.mediaFile(str), bArr4);
+                            } catch (Exception unused21) {
+                            } catch (Throwable unused22) {
+                                metaThrew = true;
+                            }
+                            if (!metaThrew) {
                                 try {
-                                    g.m.K(ChatMedia.mediaFile(str), bArr4);
-                                } catch (Exception unused21) {
-                                }
-                                final int i11 = eVar2.f847a;
-                                Runnable runnable = new Runnable() {
-                                    @Override
-                                    public final void run() {
-                                        Object obj7;
-                                        ChatScreen chatScreen4 = chatScreen3;
-                                        Iterator it2 = chatScreen4.messages.iterator();
-                                        while (true) {
-                                            if (!it2.hasNext()) {
-                                                obj7 = null;
-                                                break;
-                                            } else {
-                                                obj7 = it2.next();
-                                                if (((ChatMessage) obj7).id == j4) {
+                                    final int i11 = eVar2.f847a;
+                                    Runnable runnable = new Runnable() {
+                                        @Override
+                                        public final void run() {
+                                            Object obj7;
+                                            ChatScreen chatScreen4 = chatScreen3;
+                                            Iterator it2 = chatScreen4.messages.iterator();
+                                            while (true) {
+                                                if (!it2.hasNext()) {
+                                                    obj7 = null;
                                                     break;
+                                                } else {
+                                                    obj7 = it2.next();
+                                                    if (((ChatMessage) obj7).id == j4) {
+                                                        break;
+                                                    }
                                                 }
                                             }
+                                            ChatMessage chatMessage = (ChatMessage) obj7;
+                                            if (chatMessage != null) {
+                                                chatMessage.duration = i11;
+                                            }
+                                            ChatAndMediaAdapter o0 = chatScreen4.messageAdapter;
+                                            if (o0 != null) {
+                                                o0.notifyDataSetChanged();
+                                            } else {
+                                                i.b.g("adapter");
+                                                throw null;
+                                            }
                                         }
-                                        ChatMessage chatMessage = (ChatMessage) obj7;
-                                        if (chatMessage != null) {
-                                            chatMessage.duration = i11;
-                                        }
-                                        ChatAndMediaAdapter o0 = chatScreen4.messageAdapter;
-                                        if (o0 != null) {
-                                            o0.notifyDataSetChanged();
-                                        } else {
-                                            i.b.g("adapter");
-                                            throw null;
-                                        }
+                                    };
+                                    activity2.runOnUiThread(runnable);
+                                    b.b j12 = ChatScreen.uploadMedia("image", bArr4);
+                                    Object obj3 = j12.f764a;
+                                    gVar3.f850b = obj3;
+                                    if (((CharSequence) obj3).length() == 0) {
+                                        gVar2.f850b = j12.f765b;
                                     }
-                                };
-                                activity2.runOnUiThread(runnable);
-                                b.b j12 = ChatScreen.uploadMedia("image", bArr4);
-                                Object obj3 = j12.f764a;
-                                gVar3.f850b = obj3;
-                                if (((CharSequence) obj3).length() == 0) {
-                                    gVar2.f850b = j12.f765b;
+                                } catch (Throwable unused23) {
+                                    metaThrew = true;
                                 }
                             }
-                        } catch (Throwable unused18) {
+                        }
+                        if (metaThrew) {
                             gVar2.f850b = "Could not send the video";
                         }
                     }
                     i.d dVar = new i.d();
-                    boolean z = false;
                     if (((CharSequence) gVar2.f850b).length() == 0) {
-                        byte[] bArr5 = new byte[12582912];
-                        InputStream openInputStream4 = activity2.getContentResolver().openInputStream(uri7);
-                        if (openInputStream4 == null) {
-                            gVar2.f850b = "Could not read the video";
-                        } else {
-                            try {
-                                FileOutputStream fileOutputStream = new FileOutputStream(file9);
+                        try {
+                            byte[] bArr5 = new byte[12582912];
+                            InputStream openInputStream4 = activity2.getContentResolver().openInputStream(uri7);
+                            if (openInputStream4 == null) {
+                                gVar2.f850b = "Could not read the video";
+                            } else {
                                 try {
-                                    while (((CharSequence) gVar2.f850b).length() == 0) {
-                                        int i12 = 0;
-                                        while (i12 < 12582912) {
-                                            int read = openInputStream4.read(bArr5, i12, 12582912 - i12);
-                                            if (read < 0) {
+                                    FileOutputStream fileOutputStream = new FileOutputStream(file9);
+                                    try {
+                                        while (((CharSequence) gVar2.f850b).length() == 0) {
+                                            int i12 = 0;
+                                            while (i12 < 12582912) {
+                                                int read = openInputStream4.read(bArr5, i12, 12582912 - i12);
+                                                if (read < 0) {
+                                                    break;
+                                                }
+                                                i12 += read;
+                                            }
+                                            if (i12 <= 0) {
                                                 break;
                                             }
-                                            i12 += read;
+                                            byte[] copyOf = i12 == 12582912 ? bArr5 : Arrays.copyOf(bArr5, i12);
+                                            if (i12 != 12582912) {
+                                                i.b.d(copyOf, "copyOf(...)");
+                                            }
+                                            b.b j13 = ChatScreen.uploadMedia("video", copyOf);
+                                            Object obj7 = j13.f764a;
+                                            if (((CharSequence) obj7).length() == 0) {
+                                                gVar2.f850b = j13.f765b;
+                                            } else {
+                                                arrayList3.add(obj7);
+                                                fileOutputStream.write(bArr5, 0, i12);
+                                            }
                                         }
-                                        if (i12 <= 0) {
-                                            break;
-                                        }
-                                        byte[] copyOf = i12 == 12582912 ? bArr5 : Arrays.copyOf(bArr5, i12);
-                                        if (i12 != 12582912) {
-                                            i.b.d(copyOf, "copyOf(...)");
-                                        }
-                                        b.b j13 = ChatScreen.uploadMedia("video", copyOf);
-                                        Object obj7 = j13.f764a;
-                                        if (((CharSequence) obj7).length() == 0) {
-                                            gVar2.f850b = j13.f765b;
-                                        } else {
-                                            arrayList3.add(obj7);
-                                            fileOutputStream.write(bArr5, 0, i12);
+                                        AppState.a(fileOutputStream, null);
+                                    } catch (Throwable th8) {
+                                        try {
+                                            throw th8;
+                                        } catch (Throwable th9) {
+                                            AppState.a(fileOutputStream, th8);
+                                            throw th9;
                                         }
                                     }
-                                    AppState.a(fileOutputStream, null);
-                                } catch (Throwable th8) {
+                                    AppState.a(openInputStream4, null);
+                                } catch (Throwable th16) {
                                     try {
-                                        throw th8;
-                                    } catch (Throwable th9) {
-                                        AppState.a(fileOutputStream, th8);
-                                        throw th9;
+                                        throw th16;
+                                    } catch (Throwable th14) {
+                                        AppState.a(openInputStream4, th16);
+                                        throw th14;
                                     }
-                                }
-                                AppState.a(openInputStream4, null);
-                            } catch (Throwable th16) {
-                                try {
-                                    throw th16;
-                                } catch (Throwable th14) {
-                                    AppState.a(openInputStream4, th16);
-                                    throw th14;
                                 }
                             }
+                        } catch (Throwable unused24) {
+                            gVar2.f850b = "Could not send the video";
                         }
                         if (((CharSequence) gVar2.f850b).length() == 0 && arrayList3.isEmpty()) {
                             gVar2.f850b = "Could not read the video";
                         }
-                        z = ((CharSequence) gVar2.f850b).length() == 0;
-                        dVar.f846a = z;
-                        if (z) {
-                            try {
-                                File file10 = ChatMedia.cacheDir;
-                                if (!file9.renameTo(ChatMedia.videoFile((String) arrayList3.get(0)))) {
-                                    dVar.f846a = false;
-                                }
-                                g.m.K(ChatMedia.mediaFile((String) gVar3.f850b), bArr4);
-                            } catch (Exception unused22) {
+                    }
+                    boolean z = ((CharSequence) gVar2.f850b).length() == 0;
+                    dVar.f846a = z;
+                    if (z) {
+                        try {
+                            File file10 = ChatMedia.cacheDir;
+                            if (!file9.renameTo(ChatMedia.videoFile((String) arrayList3.get(0)))) {
+                                dVar.f846a = false;
                             }
+                            g.m.K(ChatMedia.mediaFile((String) gVar3.f850b), bArr4);
+                        } catch (Exception unused25) {
                         }
-                        if (!dVar.f846a) {
-                            try {
-                                file9.delete();
-                            } catch (Exception unused23) {
-                            }
-                            if (((CharSequence) gVar2.f850b).length() == 0) {
-                                gVar2.f850b = "Could not send the video";
-                            }
+                    }
+                    if (!dVar.f846a) {
+                        try {
+                            file9.delete();
+                        } catch (Exception unused26) {
+                        }
+                        if (((CharSequence) gVar2.f850b).length() == 0) {
+                            gVar2.f850b = "Could not send the video";
                         }
                     }
                     chatScreen3.activity.runOnUiThread(new MembersOrVideoResultRunnable(dVar, chatScreen3, j4, gVar3, arrayList3, eVar2, this.message, gVar2));
