@@ -17,9 +17,13 @@ public final class SlideDownDialog extends Dialog {
 
     public static void dismissImmediately(SlideDownDialog e2) {
         try {
-            e2.dismiss();
+            e2.superDismiss();
         } catch (Exception unused) {
         }
+    }
+
+    public final void superDismiss() {
+        super.dismiss();
     }
 
     @Override

@@ -1982,7 +1982,7 @@ public final class MainActivity extends Activity {
                 return;
             }
             TerminalManager.INSTANCE.closeAllSessions();
-            showLocked(account != null);
+            showLocked(account != null && account.optBoolean("known", true));
         }
     }
 

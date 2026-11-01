@@ -64,59 +64,55 @@ public final class TerminalSession {
         StringBuilder sb = new StringBuilder();
         this.output = sb;
         this.currentDir = homeDir;
-        if (logFile != null) {
-            try {
-                if (logFile.isFile()) {
-                    String savedOutput = g.m.I(logFile);
-                    if (savedOutput.length() > 40000) {
-                        savedOutput = savedOutput.substring(savedOutput.length() - 40000);
-                        i.b.d(savedOutput, "substring(...)");
-                    }
-                    sb.append(savedOutput);
+        try {
+            if (logFile != null && logFile.isFile()) {
+                String savedOutput = g.m.I(logFile);
+                if (savedOutput.length() > 40000) {
+                    savedOutput = savedOutput.substring(savedOutput.length() - 40000);
+                    i.b.d(savedOutput, "substring(...)");
                 }
-            } catch (Exception unused) {
+                sb.append(savedOutput);
             }
-        }
-        File runFile = runFile();
-        if (runFile != null && runFile.isFile()) {
-            String savedCommand = m.e.h0(g.m.I(runFile)).toString();
-            runFile.delete();
-            if (savedCommand.length() > 0) {
-                this.pendingCommand = savedCommand;
-                File tryFile = tryFile();
-                Integer count = null;
-                if (tryFile != null) {
-                    try {
-                        String savedCount = m.e.h0(g.m.I(tryFile)).toString();
-                        if (savedCount != null) {
-                            count = m.l.C(savedCount);
+            File runFile = runFile();
+            if (runFile != null && runFile.isFile()) {
+                String savedCommand = m.e.h0(g.m.I(runFile)).toString();
+                runFile.delete();
+                if (savedCommand.length() > 0) {
+                    this.pendingCommand = savedCommand;
+                    File tryFile = tryFile();
+                    Integer count = null;
+                    if (tryFile != null) {
+                        try {
+                            String savedCount = m.e.h0(g.m.I(tryFile)).toString();
+                            if (savedCount != null) {
+                                count = m.l.C(savedCount);
+                            }
+                        } catch (Exception unused) {
                         }
-                    } catch (Exception unused2) {
                     }
-                }
-                int newCount = (count != null ? count.intValue() : 0) + 1;
-                if (tryFile != null) {
-                    try {
-                        g.m.L(tryFile, String.valueOf(newCount));
-                    } catch (Exception unused3) {
+                    int newCount = (count != null ? count.intValue() : 0) + 1;
+                    if (tryFile != null) {
+                        try {
+                            g.m.L(tryFile, String.valueOf(newCount));
+                        } catch (Exception unused2) {
+                        }
                     }
-                }
-                this.restartCount = newCount;
-                echo("\n[Android stopped the app while this was running: " + savedCommand + "]\n");
-            }
-        }
-        File cwdFile = cwdFile();
-        if (cwdFile != null && cwdFile.isFile()) {
-            String savedCwd = g.m.I(cwdFile);
-            if (savedCwd.length() > 0) {
-                File canonicalFile = new File(this.homeDir, savedCwd).getCanonicalFile();
-                String canonicalPath = this.homeDir.getCanonicalPath();
-                if (canonicalFile.isDirectory()) {
-                    if (!i.b.a(canonicalFile.getPath(), canonicalPath)) {
-                    }
-                    setCurrentDir(canonicalFile);
+                    this.restartCount = newCount;
+                    echo("\n[Android stopped the app while this was running: " + savedCommand + "]\n");
                 }
             }
+            File cwdFile = cwdFile();
+            if (cwdFile != null && cwdFile.isFile()) {
+                String savedCwd = g.m.I(cwdFile);
+                if (savedCwd.length() > 0) {
+                    File canonicalFile = new File(this.homeDir, savedCwd).getCanonicalFile();
+                    String canonicalPath = this.homeDir.getCanonicalPath();
+                    if (canonicalFile.isDirectory() && (i.b.a(canonicalFile.getPath(), canonicalPath) || m.m.K(canonicalFile.getPath(), canonicalPath + "/"))) {
+                        setCurrentDir(canonicalFile);
+                    }
+                }
+            }
+        } catch (Exception unused3) {
         }
         this.prompt = "";
         this.npmInstallPattern = new i.g("^npm\\s+(install|i|ci|add|update|up)(\\s.*)?$");
@@ -559,22 +555,22 @@ public final class TerminalSession {
         }
         String firstWord = m.e.e0(command, ' ');
         if (firstWord.equals("node") || firstWord.equals("npm") || firstWord.equals("npx")) {
-            TermuxPackageManager y2Var = TermuxPackageManager.INSTANCE;
+            boolean ready = false;
             try {
-                if (TermuxPackageManager.isPrefixRecorded()) {
-                    if (new File(TermuxPackageManager.prefixDir(), "bin/".concat(firstWord)).canExecute()) {
-                        try {
-                            boolean toolsCurrent = i.b.a(m.e.h0(g.m.I(new File(TermuxPackageManager.prefixDir(), "var/lib/nixpkg/tools"))).toString(), "5");
-                        } catch (Exception unused2) {
-                            boolean toolsCurrent = false;
-                        }
+                if (TermuxPackageManager.isPrefixRecorded() && new File(TermuxPackageManager.prefixDir(), "bin/".concat(firstWord)).canExecute()) {
+                    try {
+                        ready = i.b.a(m.e.h0(g.m.I(new File(TermuxPackageManager.prefixDir(), "var/lib/nixpkg/tools"))).toString(), "5");
+                    } catch (Exception unused2) {
+                        ready = false;
                     }
                 }
             } catch (Exception unused3) {
             }
-            TermuxPackageManager y2Var2 = TermuxPackageManager.INSTANCE;
-            installPackages(TermuxPackageManager.defaultPackages(), command);
-            return;
+            if (!ready) {
+                TermuxPackageManager y2Var = TermuxPackageManager.INSTANCE;
+                installPackages(TermuxPackageManager.defaultPackages(), command);
+                return;
+            }
         }
         this.busy = true;
         this.prompt = this.npmInstallPattern.b(command) ? "Installing packages..." : "";
@@ -745,16 +741,24 @@ public final class TerminalSession {
                     case "ls":
                     case "list-installed": {
                         String message = "No packages installed.\n";
-                        String installedText = m.e.h0(g.m.I(new File(TermuxPackageManager.prefixDir(), "var/lib/nixpkg/installed"))).toString();
-                        if (installedText.length() != 0) {
-                            message = installedText.concat("\n");
+                        try {
+                            String installedText = m.e.h0(g.m.I(new File(TermuxPackageManager.prefixDir(), "var/lib/nixpkg/installed"))).toString();
+                            if (installedText.length() != 0) {
+                                message = installedText.concat("\n");
+                            }
+                        } catch (Exception unused) {
                         }
                         echo(message);
                         break;
                     }
                     case "upgrade":
                     case "full-upgrade": {
-                        List installedNames = c.b.Q(TermuxPackageManager.readInstalled(TermuxPackageManager.prefixDir()).keySet());
+                        List installedNames;
+                        try {
+                            installedNames = c.b.Q(TermuxPackageManager.readInstalled(TermuxPackageManager.prefixDir()).keySet());
+                        } catch (Exception unused) {
+                            installedNames = c.j.f773a;
+                        }
                         ArrayList reinstall = new ArrayList(c.d.E(installedNames));
                         Iterator namesIt = installedNames.iterator();
                         while (namesIt.hasNext()) {

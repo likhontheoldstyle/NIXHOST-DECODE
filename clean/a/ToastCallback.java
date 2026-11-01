@@ -20,7 +20,7 @@ public final class ToastCallback implements h.b {
         ImageEditorView c0091y1;
         switch (this.mode) {
             case 0:
-                break;
+                return Boolean.valueOf(((ChatMessage) obj).id == ((OutboxEntry) this.target).id);
             case 1:
                 String str = (String) obj;
                 if (str.length() > 0 && (c0091y1 = ((MediaPicker) this.target).F) != null) {

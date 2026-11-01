@@ -16,10 +16,7 @@ public final class SortComparator implements Comparator {
         switch (this.mode) {
             case 0:
             case 1:
-                ChatMessage chatMessage = (ChatMessage) obj;
-                ChatMessage chatMessage2 = (ChatMessage) obj2;
-                int d = AppState.d(Long.valueOf(chatMessage.timestamp), Long.valueOf(chatMessage2.timestamp));
-                return d != 0 ? d : AppState.d(Long.valueOf(chatMessage.id), Long.valueOf(chatMessage2.id));
+                return AppState.d(Long.valueOf(((ChatMessage) obj).id), Long.valueOf(((ChatMessage) obj2).id));
             case 2:
                 return AppState.d(Long.valueOf(((MediaItem) obj2).dateAdded), Long.valueOf(((MediaItem) obj).dateAdded));
             default:

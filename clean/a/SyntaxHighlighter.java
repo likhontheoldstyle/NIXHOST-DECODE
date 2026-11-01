@@ -78,9 +78,11 @@ public abstract class SyntaxHighlighter {
                             }
                             if (nameEnd > nameStart) {
                                 paintSpan(spannable, nameStart, nameEnd, -8001379);
+                                inTag = true;
+                                pos = nameEnd;
+                            } else {
+                                pos = open + 1;
                             }
-                            inTag = true;
-                            pos = nameEnd;
                         }
                     } else {
                         char charAt = line.charAt(pos);
@@ -145,7 +147,7 @@ public abstract class SyntaxHighlighter {
                     if (lang == 0 && charAt == '/' && pos + 1 < length && line.charAt(pos + 1) == '/') {
                         paintSpan(spannable, pos, length, -6971995);
                         pos = length;
-                    } else if ((lang == 0 || lang == 1 || lang == 4) && charAt == '/' && pos + 1 < length && line.charAt(pos + 1) == '*') {
+                    } else if ((lang == 0 || lang == 1) && charAt == '/' && pos + 1 < length && line.charAt(pos + 1) == '*') {
                         int close = m.e.Q(line, "*/", pos + 2, false, 4);
                         if (close < 0) {
                             paintSpan(spannable, pos, length, -6971995);
@@ -194,7 +196,7 @@ public abstract class SyntaxHighlighter {
                         boolean boundary = true;
                         if (pos != 0) {
                             char prev = line.charAt(pos - 1);
-                            if (Character.isLetterOrDigit(prev) || prev == '_') {
+                            if (Character.isLetterOrDigit(prev) || prev == '_' || prev == '$') {
                                 boundary = false;
                             }
                         }
@@ -234,7 +236,13 @@ public abstract class SyntaxHighlighter {
                             } else if (charBefore != '.' && literals.contains(word)) {
                                 paintSpan(spannable, pos, end, -8800001);
                             } else if (charBefore == '.') {
-                                paintSpan(spannable, pos, end, -5008656);
+                                int next = after + 1;
+                                char charNext = next < length ? line.charAt(next) : ' ';
+                                if (charAfter == '(' || (charAfter == '=' && charNext != '=' && charNext != '>')) {
+                                    paintSpan(spannable, pos, end, -5008656);
+                                } else {
+                                    paintSpan(spannable, pos, end, -8800001);
+                                }
                             } else if (charAfter == '(') {
                                 paintSpan(spannable, pos, end, -5008656);
                             }
