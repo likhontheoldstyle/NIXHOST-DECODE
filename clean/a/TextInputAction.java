@@ -38,17 +38,17 @@ public final class TextInputAction implements h.b {
                 ChatScreen.buildGroupInfo(chatScreen, (LinearLayout) obj2);
                 return b.d.f770c;
             case 1:
-                O2 o2 = (O2) obj;
-                ((B1) obj3).b(o2.f241a, new TextInputAction((C0091y1) obj2, o2, 2));
+                ImageTextOverlay o2 = (ImageTextOverlay) obj;
+                ((MediaPicker) obj3).b(o2.text, new TextInputAction((ImageEditorView) obj2, o2, 2));
                 return b.d.f770c;
             case 2:
                 String str2 = (String) obj;
-                C0091y1 c0091y1 = (C0091y1) obj3;
-                O2 o22 = (O2) obj2;
+                ImageEditorView c0091y1 = (ImageEditorView) obj3;
+                ImageTextOverlay o22 = (ImageTextOverlay) obj2;
                 if (str2.length() == 0) {
-                    c0091y1.f721b.remove(o22);
+                    c0091y1.annotations.remove(o22);
                 } else {
-                    o22.f241a = str2;
+                    o22.text = str2;
                 }
                 c0091y1.invalidate();
                 return b.d.f770c;

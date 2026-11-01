@@ -123,13 +123,13 @@ public final class TaskRunnable implements Runnable {
                 }
                 return;
             case 4:
-                ((C0042k1) this.target).f569a.a();
+                ((SwipeDownSheetLayout) this.target).onDismiss.a();
                 return;
             case 5:
-                B1 gallery = (B1) this.target;
+                MediaPicker gallery = (MediaPicker) this.target;
                 gallery.getClass();
                 ArrayList media = new ArrayList();
-                ContentResolver contentResolver = gallery.f26a.getContentResolver();
+                ContentResolver contentResolver = gallery.activity.getContentResolver();
                 try {
                     Uri imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                     query = contentResolver.query(imagesUri, new String[]{"_id", "bucket_display_name", "date_added", "_data"}, null, null, null);
@@ -141,7 +141,7 @@ public final class TaskRunnable implements Runnable {
                                 String bucketName = bucket == null ? "Other" : bucket;
                                 long dateAdded = query.getLong(2);
                                 String path = query.getString(3);
-                                media.add(new C0094z1(itemUri, false, 0L, bucketName, dateAdded, path == null ? "" : path));
+                                media.add(new MediaItem(itemUri, false, 0L, bucketName, dateAdded, path == null ? "" : path));
                                 th = null;
                             } finally {
                             }
@@ -162,7 +162,7 @@ public final class TaskRunnable implements Runnable {
                                 String bucketName = bucket == null ? "Other" : bucket;
                                 long dateAdded = query.getLong(2);
                                 String path = query.getString(3);
-                                media.add(new C0094z1(itemUri, true, duration, bucketName, dateAdded, path == null ? "" : path));
+                                media.add(new MediaItem(itemUri, true, duration, bucketName, dateAdded, path == null ? "" : path));
                             } finally {
                             }
                         }
@@ -171,9 +171,9 @@ public final class TaskRunnable implements Runnable {
                 } catch (Throwable unused4) {
                 }
                 if (media.size() > 1) {
-                    c.g.F(media, new N0(2));
+                    c.g.F(media, new SortComparator(2));
                 }
-                gallery.f34i.post(new HttpConnectionHandler(gallery, media, 4));
+                gallery.mainHandler.post(new HttpConnectionHandler(gallery, media, 4));
                 return;
             case 6:
                 HostService hostService = (HostService) this.target;
@@ -207,12 +207,12 @@ public final class TaskRunnable implements Runnable {
                     return;
                 }
             case 9:
-                E2.a((E2) this.target);
+                SlideDownDialog.dismissImmediately((SlideDownDialog) this.target);
                 return;
             default:
-                y2 y2Var = y2.f736a;
+                TermuxPackageManager y2Var = TermuxPackageManager.INSTANCE;
                 try {
-                    message = "Package list updated (" + ((Map) y2.s().f765b).size() + " packages available).";
+                    message = "Package list updated (" + ((Map) TermuxPackageManager.fetchPackageIndex().f765b).size() + " packages available).";
                 } catch (Exception e2) {
                     message = e2.getMessage();
                     if (message == null) {

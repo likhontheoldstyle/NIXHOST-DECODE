@@ -39,10 +39,10 @@ public final class ValueAction implements h.b {
                 chatScreen.getClass();
                 View childAt = ((LinearLayout) obj2).getChildAt(0);
                 if (childAt != null && i.b.a(childAt.getTag(), (String) obj3)) {
-                    LinearLayout.LayoutParams U0 = chatScreen.mediaLayoutParams(width);
+                    LinearLayout.LayoutParams MemberComparator = chatScreen.mediaLayoutParams(width);
                     ViewGroup.LayoutParams layoutParams = childAt.getLayoutParams();
-                    if (layoutParams == null || layoutParams.width != U0.width || layoutParams.height != U0.height) {
-                        childAt.setLayoutParams(U0);
+                    if (layoutParams == null || layoutParams.width != MemberComparator.width || layoutParams.height != MemberComparator.height) {
+                        childAt.setLayoutParams(MemberComparator);
                     }
                 }
                 break;
@@ -59,7 +59,7 @@ public final class ValueAction implements h.b {
                     ((ClipboardManager) systemService).setPrimaryClip(ClipData.newPlainText(file.getName(), (String) obj3));
                     mainActivity.toast("Copied");
                 } else {
-                    mainActivity.showCommitSheet(J0.a("Delete ", file.getName()), new FileConfirmAction(file, mainActivity, 0));
+                    mainActivity.showCommitSheet(StringPlus.stringPlus("Delete ", file.getName()), new FileConfirmAction(file, mainActivity, 0));
                 }
                 break;
             default:

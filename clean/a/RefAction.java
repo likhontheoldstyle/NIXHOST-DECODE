@@ -17,7 +17,7 @@ public final class RefAction implements h.a {
     public final Object a() {
         switch (this.mode) {
             case 0:
-                ((E2) this.target).dismiss();
+                ((SlideDownDialog) this.target).dismiss();
                 return b.d.f770c;
             case 1:
                 int i2 = MainActivity.R;

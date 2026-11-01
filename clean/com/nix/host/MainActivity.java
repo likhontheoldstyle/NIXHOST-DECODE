@@ -238,7 +238,7 @@ public final class MainActivity extends Activity {
                 view.setAlpha(alpha * floatValue);
             }
         });
-        ofFloat.addListener(new C0070r2(frameLayout, s2Var, view, aVar));
+        ofFloat.addListener(new SheetDismissAnimatorListener(frameLayout, s2Var, view, aVar));
         ofFloat.start();
     }
 
@@ -861,7 +861,7 @@ public final class MainActivity extends Activity {
         V2.addView(r4, layoutParams(this, this.matchParent, this.wrapContent, 0, 0, 0, 60));
         File[] listFiles = file3.listFiles();
         if (listFiles != null) {
-            final h.b[] bVarArr = {new C0085w1(1), new C0085w1(2)};
+            final h.b[] bVarArr = {new ValueFunction(1), new ValueFunction(2)};
             list = c.a.F(listFiles, new Comparator() {
                 @Override
                 public final int compare(Object obj, Object obj2) {
@@ -1035,7 +1035,7 @@ public final class MainActivity extends Activity {
             i.b.g("shell");
             throw null;
         }
-        setRootContent(frameLayout3, 0, newScreen.isDarkBg() ? newScreen.palette.f486f : newScreen.bgColor, newScreen.isDarkBg() ? newScreen.palette.q : !newScreen.lightBars, true);
+        setRootContent(frameLayout3, 0, newScreen.isDarkBg() ? newScreen.palette.navigationBarColor : newScreen.bgColor, newScreen.isDarkBg() ? newScreen.palette.lightBars : !newScreen.lightBars, true);
         newScreen.activityRef = new ActivityRef(this);
         newScreen.active = true;
         AppState.chatForeground = true;
@@ -1065,7 +1065,7 @@ public final class MainActivity extends Activity {
                         }
                     }
                     if (messages.size() > 1) {
-                        c.g.F(messages, new N0(1));
+                        c.g.F(messages, new SortComparator(1));
                     }
                     JSONObject reactionsJson = cacheJson.optJSONObject("r");
                     if (reactionsJson != null) {
@@ -1273,7 +1273,7 @@ public final class MainActivity extends Activity {
         if (optLong > 0) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM d, yyyy", Locale.US);
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            expiryText = J0.a("expire ", simpleDateFormat.format(new Date(optLong)));
+            expiryText = StringPlus.stringPlus("expire ", simpleDateFormat.format(new Date(optLong)));
         } else {
             expiryText = "no expiry";
         }
@@ -1282,7 +1282,7 @@ public final class MainActivity extends Activity {
         r3.addView(U3, layoutParams(this, i10, i10, 0, 8, 0, 48));
         V2.addView(r3, layoutParams(this, this.matchParent, this.wrapContent, 12, 0, 0, 56));
         i.g gVar = new i.g();
-        gVar.f850b = new C0(2);
+        gVar.f850b = new ValueProvider(2);
         setAction(t2, new RefAction(1, gVar));
         V.addView(V2, layoutParams(this, this.matchParent, this.wrapContent, 0, 0, 0, 60));
         View view2 = new View(this);
@@ -1349,9 +1349,9 @@ public final class MainActivity extends Activity {
         if (onlineNow2) {
             if (jSONArray3.length() == 0) {
                 View t3 = makeIcon("logo", -43230, 96, 1.8f);
-                LinearLayout.LayoutParams v2 = layoutParams(this, dp(96), dp(96), 90, 0, 0, 56);
-                v2.gravity = 1;
-                V5.addView(t3, v2);
+                LinearLayout.LayoutParams LimitedInputStream = layoutParams(this, dp(96), dp(96), 90, 0, 0, 56);
+                LimitedInputStream.gravity = 1;
+                V5.addView(t3, LimitedInputStream);
             }
             for (int i5 = 0; i5 < jSONArray3.length(); i5++) {
                 JSONObject instanceJson = jSONArray3.getJSONObject(i5);
@@ -1366,7 +1366,7 @@ public final class MainActivity extends Activity {
                 LinearLayout V7 = column();
                 V7.addView(makeText(instanceName, 24.0f, AppState.darkTheme ? -1 : -15656921, true));
                 if (createdAt > 0) {
-                    V7.addView(makeText(J0.a("Created: ", new SimpleDateFormat("MMM d, yyyy, h:mm a", Locale.US).format(new Date(createdAt))), 16.0f, AppState.darkTheme ? -8618878 : -9735552, false), layoutParams(this, this.matchParent, this.wrapContent, 6, 0, 0, 56));
+                    V7.addView(makeText(StringPlus.stringPlus("Created: ", new SimpleDateFormat("MMM d, yyyy, h:mm a", Locale.US).format(new Date(createdAt))), 16.0f, AppState.darkTheme ? -8618878 : -9735552, false), layoutParams(this, this.matchParent, this.wrapContent, 6, 0, 0, 56));
                 }
                 r5.addView(V7, new LinearLayout.LayoutParams(0, this.wrapContent, 1.0f));
                 setAction(r5, new h.a() {
@@ -2476,7 +2476,7 @@ public final class MainActivity extends Activity {
         }
         this.chatScreen = null;
         if (this.username.length() > 0) {
-            String cacheKey = J0.a("chatcache_", this.username);
+            String cacheKey = StringPlus.stringPlus("chatcache_", this.username);
             SharedPreferences sharedPreferences = AppState.prefs;
             if (sharedPreferences == null) {
                 i.b.g("sp");
@@ -2736,7 +2736,7 @@ public final class MainActivity extends Activity {
             gradientDrawable.setSize(dp(10), dp(22));
             editText.setTextCursorDrawable(gradientDrawable);
         }
-        String draftKey = J0.a("draft_", this.termKey);
+        String draftKey = StringPlus.stringPlus("draft_", this.termKey);
         SharedPreferences sharedPreferences3 = AppState.prefs;
         if (sharedPreferences3 == null) {
             i.b.g("sp");

@@ -298,8 +298,8 @@ public final class HostService extends Service {
                 throw null;
             }
             String string5 = sharedPreferences5.getString("servePort", "8080");
-            Integer C2 = m.l.C(string5 != null ? string5 : "8080");
-            i4 = C2 != null ? C2.intValue() : 8080;
+            Integer SentSoundPlayer = m.l.C(string5 != null ? string5 : "8080");
+            i4 = SentSoundPlayer != null ? SentSoundPlayer.intValue() : 8080;
         }
         postNotification(i4, z);
         if (z) {

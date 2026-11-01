@@ -35,7 +35,7 @@ public final class SharedTextWatcher implements TextWatcher {
                     if (currentTimeMillis - chatScreen.lastSyncAt > 2500) {
                         chatScreen.lastSyncAt = currentTimeMillis;
                         chatScreen.syncing = true;
-                        new Thread(new RunnableC0068r0(0)).start();
+                        new Thread(new ChatSignalRunnable(0)).start();
                         return;
                     }
                     return;
@@ -43,7 +43,7 @@ public final class SharedTextWatcher implements TextWatcher {
                 if (chatScreen.syncing) {
                     chatScreen.syncing = false;
                     chatScreen.lastSyncAt = 0L;
-                    new Thread(new RunnableC0068r0(1)).start();
+                    new Thread(new ChatSignalRunnable(1)).start();
                     return;
                 }
                 return;

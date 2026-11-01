@@ -308,7 +308,7 @@ public final class TerminalSession {
             this.envHomeDir.mkdirs();
             File tmpDir = new File(this.envHomeDir, "tmp");
             tmpDir.mkdirs();
-            y2.f736a.O(dir, this.envHomeDir);
+            TermuxPackageManager.INSTANCE.refreshShimsAndHelpers(dir, this.envHomeDir);
             ProcessBuilder processBuilder = new ProcessBuilder("/system/bin/sh", "-c", "echo __NIXPID__$$; " + command);
             processBuilder.directory(dir);
             processBuilder.redirectErrorStream(true);
@@ -322,10 +322,10 @@ public final class TerminalSession {
             environment.put("npm_config_color", "always");
             environment.put("npm_config_cache", new File(this.envHomeDir, ".npm").getPath());
             environment.put("npm_config_audit", "false");
-            y2.a(environment, this.envHomeDir, dir);
+            TermuxPackageManager.buildEnvironment(environment, this.envHomeDir, dir);
             java.lang.Process shell = processBuilder.start();
             this.process = shell;
-            Thread refresher = new Thread(new RunnableC0093z0(running, y2.q(dir) ? 2500L : 1000L, dir, this));
+            Thread refresher = new Thread(new SendAndPersistRunnable(running, TermuxPackageManager.isExternalStorage(dir) ? 2500L : 1000L, dir, this));
             refresher.setDaemon(true);
             refresher.start();
             InputStreamReader reader = new InputStreamReader(shell.getInputStream(), m.a.f864a);
@@ -378,7 +378,7 @@ public final class TerminalSession {
             }
         }
         running.set(false);
-        y2.f736a.O(dir, this.envHomeDir);
+        TermuxPackageManager.INSTANCE.refreshShimsAndHelpers(dir, this.envHomeDir);
     }
 
     public final void finishRun() {
@@ -410,7 +410,7 @@ public final class TerminalSession {
         this.installCancelled = false;
         this.prompt = progressBar(0);
         TerminalManager.INSTANCE.syncServiceState();
-        new Thread(new K(packageNames, this, this.currentDir, followUpCommand)).start();
+        new Thread(new QuadTaskRunnable(packageNames, this, this.currentDir, followUpCommand)).start();
     }
 
     public final void interrupt() {
@@ -559,12 +559,12 @@ public final class TerminalSession {
         }
         String firstWord = m.e.e0(command, ' ');
         if (firstWord.equals("node") || firstWord.equals("npm") || firstWord.equals("npx")) {
-            y2 y2Var = y2.f736a;
+            TermuxPackageManager y2Var = TermuxPackageManager.INSTANCE;
             try {
-                if (y2.F()) {
-                    if (new File(y2.B(), "bin/".concat(firstWord)).canExecute()) {
+                if (TermuxPackageManager.isPrefixRecorded()) {
+                    if (new File(TermuxPackageManager.prefixDir(), "bin/".concat(firstWord)).canExecute()) {
                         try {
-                            boolean toolsCurrent = i.b.a(m.e.h0(g.m.I(new File(y2.B(), "var/lib/nixpkg/tools"))).toString(), "5");
+                            boolean toolsCurrent = i.b.a(m.e.h0(g.m.I(new File(TermuxPackageManager.prefixDir(), "var/lib/nixpkg/tools"))).toString(), "5");
                         } catch (Exception unused2) {
                             boolean toolsCurrent = false;
                         }
@@ -572,8 +572,8 @@ public final class TerminalSession {
                 }
             } catch (Exception unused3) {
             }
-            y2 y2Var2 = y2.f736a;
-            installPackages(y2.x(), command);
+            TermuxPackageManager y2Var2 = TermuxPackageManager.INSTANCE;
+            installPackages(TermuxPackageManager.defaultPackages(), command);
             return;
         }
         this.busy = true;
@@ -652,7 +652,7 @@ public final class TerminalSession {
                 TerminalManager.INSTANCE.syncServiceState();
                 int gen = this.generation;
                 this.cloning = true;
-                new Thread(new RunnableC0037j0(folder, url, dir, gen, this)).start();
+                new Thread(new MultiWorkRunnable(folder, url, dir, gen, this)).start();
                 break;
             }
             case "cd": {
@@ -696,7 +696,7 @@ public final class TerminalSession {
                 List<File> entries = c.j.f773a;
                 File[] listFiles = target.listFiles();
                 if (listFiles != null) {
-                    entries = c.a.F(listFiles, new N0(4));
+                    entries = c.a.F(listFiles, new SortComparator(4));
                 }
                 StringBuilder sb = new StringBuilder();
                 for (File entry : entries) {
@@ -745,7 +745,7 @@ public final class TerminalSession {
                     case "ls":
                     case "list-installed": {
                         String message = "No packages installed.\n";
-                        String installedText = m.e.h0(g.m.I(new File(y2.B(), "var/lib/nixpkg/installed"))).toString();
+                        String installedText = m.e.h0(g.m.I(new File(TermuxPackageManager.prefixDir(), "var/lib/nixpkg/installed"))).toString();
                         if (installedText.length() != 0) {
                             message = installedText.concat("\n");
                         }
@@ -754,7 +754,7 @@ public final class TerminalSession {
                     }
                     case "upgrade":
                     case "full-upgrade": {
-                        List installedNames = c.b.Q(y2.E(y2.B()).keySet());
+                        List installedNames = c.b.Q(TermuxPackageManager.readInstalled(TermuxPackageManager.prefixDir()).keySet());
                         ArrayList reinstall = new ArrayList(c.d.E(installedNames));
                         Iterator namesIt = installedNames.iterator();
                         while (namesIt.hasNext()) {
@@ -805,8 +805,8 @@ public final class TerminalSession {
                 echo("\f");
                 break;
             case "setup": {
-                y2 y2Var = y2.f736a;
-                installPackages(y2.x(), null);
+                TermuxPackageManager y2Var = TermuxPackageManager.INSTANCE;
+                installPackages(TermuxPackageManager.defaultPackages(), null);
                 break;
             }
             default:
