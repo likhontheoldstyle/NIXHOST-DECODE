@@ -58,7 +58,7 @@ public final class HostService extends Service {
         notificationChannel.setShowBadge(false);
         notificationManager.createNotificationChannel(notificationChannel);
         PendingIntent activity = PendingIntent.getActivity(this, 0, new Intent(this, (Class<?>) MainActivity.class), 67108864);
-        Notification.Builder contentTitle = new Notification.Builder(this, "host3").setContentTitle("NixHost - Best Fr Fr");
+        Notification.Builder contentTitle = new Notification.Builder(this, "host3").setContentTitle("RikaHost - Best Fr Fr");
         if (z) {
             str = "NixHost server is running";
         } else if (i2 != 0) {
