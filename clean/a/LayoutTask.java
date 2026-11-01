@@ -24,7 +24,7 @@ public final class LayoutTask implements View.OnLayoutChangeListener {
                 int i11 = i9 - i7;
                 final ChatScreen chatScreen = (ChatScreen) obj;
                 if (i11 <= 0 || i10 >= i11) {
-                    I2 i22 = chatScreen.messageList;
+                    ChatListView i22 = chatScreen.messageList;
                     if (i22 != null) {
                         chatScreen.stickToBottom = true ^ i22.canScrollVertically(1);
                         return;
@@ -34,7 +34,7 @@ public final class LayoutTask implements View.OnLayoutChangeListener {
                 }
                 final int i12 = i11 - i10;
                 final boolean z = chatScreen.stickToBottom;
-                I2 i23 = chatScreen.messageList;
+                ChatListView i23 = chatScreen.messageList;
                 if (i23 != null) {
                     i23.post(new Runnable() {
                         @Override
@@ -45,7 +45,7 @@ public final class LayoutTask implements View.OnLayoutChangeListener {
                                 return;
                             }
                             if (z) {
-                                I2 i24 = chatScreen2.messageList;
+                                ChatListView i24 = chatScreen2.messageList;
                                 if (i24 != null) {
                                     i24.scrollListBy(i12);
                                 } else {

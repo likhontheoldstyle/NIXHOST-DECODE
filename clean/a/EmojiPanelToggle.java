@@ -34,12 +34,12 @@ public final class EmojiPanelToggle implements h.a {
     public final Object a() {
         switch (this.mode) {
             case 0:
-                C0 c0 = new C0(2);
+                ValueProvider c0 = new ValueProvider(2);
                 i.d dVar = this.dismissedRef;
                 MainActivity.animateEmojiPanelClose(this.iconView, this.sheet, this.scrimView, this.rootFrame, this.activity, c0, dVar);
                 break;
             default:
-                C0 c02 = new C0(2);
+                ValueProvider c02 = new ValueProvider(2);
                 i.d dVar2 = this.dismissedRef;
                 MainActivity.animateEmojiPanelClose(this.iconView, this.sheet, this.scrimView, this.rootFrame, this.activity, c02, dVar2);
                 break;

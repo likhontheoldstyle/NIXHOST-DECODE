@@ -30,7 +30,7 @@ public final class MultiAction implements h.a {
 
     public final Object third;
 
-    public MultiAction(i.d dVar, C1 c1, i.g gVar) {
+    public MultiAction(i.d dVar, ChatIconView c1, i.g gVar) {
         this.mode = 1;
         this.first = dVar;
         this.second = c1;
@@ -47,7 +47,7 @@ public final class MultiAction implements h.a {
                 if (((i.d) this.first).f846a) {
                     VideoView videoView = (VideoView) this.third;
                     boolean isPlaying = videoView.isPlaying();
-                    C1 c1 = (C1) this.second;
+                    ChatIconView c1 = (ChatIconView) this.second;
                     if (isPlaying) {
                         videoView.pause();
                         str = "play";
@@ -62,7 +62,7 @@ public final class MultiAction implements h.a {
                 i.d dVar = (i.d) this.first;
                 boolean z = !dVar.f846a;
                 dVar.f846a = z;
-                ((C1) this.second).set(z ? "mute" : "volume");
+                ((ChatIconView) this.second).set(z ? "mute" : "volume");
                 MediaPlayer mediaPlayer = (MediaPlayer) ((i.g) this.third).f850b;
                 if (mediaPlayer != null) {
                     boolean z2 = dVar.f846a;
@@ -75,26 +75,26 @@ public final class MultiAction implements h.a {
                 Activity activity = chatScreen.activity;
                 Dialog dialog = new Dialog(activity, android.R.style.Theme_Black_NoTitleBar);
                 DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
-                C0022f1 c0022f1 = (C0022f1) this.third;
-                boolean z3 = c0022f1.f484d;
-                int i2 = z3 ? chatScreen.textColor : c0022f1.f487g;
-                int i3 = z3 ? chatScreen.subTextColor : c0022f1.f488h;
+                ChatTheme c0022f1 = (ChatTheme) this.third;
+                boolean z3 = c0022f1.isDefault;
+                int i2 = z3 ? chatScreen.textColor : c0022f1.titleTextColor;
+                int i3 = z3 ? chatScreen.subTextColor : c0022f1.subTextColor;
                 FrameLayout frameLayout = new FrameLayout(activity);
-                boolean z4 = c0022f1.f484d;
+                boolean z4 = c0022f1.isDefault;
                 int i4 = (int) (displayMetrics.widthPixels * 0.5f);
                 int i5 = (int) (displayMetrics.heightPixels * 0.5f);
-                frameLayout.addView(new N2(chatScreen.activity, z4 ? null : c0022f1, chatScreen.bgColor, i4 < 200 ? 200 : i4, i5 < 300 ? 300 : i5), new FrameLayout.LayoutParams(-1, -1));
+                frameLayout.addView(new ThemedBackgroundView(chatScreen.activity, z4 ? null : c0022f1, chatScreen.bgColor, i4 < 200 ? 200 : i4, i5 < 300 ? 300 : i5), new FrameLayout.LayoutParams(-1, -1));
                 LinearLayout k1 = chatScreen.columnLayout();
                 LinearLayout P = chatScreen.rowLayout();
                 P.setPadding(chatScreen.dp(2.0f), chatScreen.dp(9.0f), chatScreen.dp(8.0f), chatScreen.dp(9.0f));
-                P.setBackgroundColor(z4 ? 0 : c0022f1.f494n);
+                P.setBackgroundColor(z4 ? 0 : c0022f1.headerBarColor);
                 FrameLayout frameLayout2 = new FrameLayout(activity);
                 float f2 = 26;
                 frameLayout2.addView(new IconView(activity, "back", i2, 2.4f), new FrameLayout.LayoutParams(chatScreen.dp(f2), chatScreen.dp(f2), 17));
                 ChatScreen.setClickAction(frameLayout2, new DismissAction(dialog, 3));
                 float f3 = 44;
                 P.addView(frameLayout2, ChatScreen.layoutParamsDefault(chatScreen, chatScreen.dp(f3), chatScreen.dp(f3), 0, 0, 0, 60));
-                P.addView(chatScreen.makeText("Previewing " + c0022f1.f482b, 21.0f, i2, true), new LinearLayout.LayoutParams(0, -2, 1.0f));
+                P.addView(chatScreen.makeText("Previewing " + c0022f1.displayName, 21.0f, i2, true), new LinearLayout.LayoutParams(0, -2, 1.0f));
                 k1.addView(P, ChatScreen.layoutParamsDefault(chatScreen, -1, -2, 0, 0, 0, 60));
                 LinearLayout k12 = chatScreen.columnLayout();
                 k12.setPadding(chatScreen.dp(14.0f), chatScreen.dp(14.0f), chatScreen.dp(14.0f), chatScreen.dp(14.0f));
@@ -111,14 +111,14 @@ public final class MultiAction implements h.a {
                 TextView f12 = chatScreen.makeText("Cancel", 19.0f, -15658735, true);
                 f12.setGravity(17);
                 f12.setBackground(chatScreen.roundedDrawable(-2318, 14.0f, 0, 0.0f));
-                f12.setOnClickListener(new ViewOnClickListenerC0074t(1, dialog));
+                f12.setOnClickListener(new DialogDismissClickListener(1, dialog));
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, chatScreen.dp(52.0f), 1.0f);
                 layoutParams.rightMargin = chatScreen.dp(6.0f);
                 P2.addView(f12, layoutParams);
                 TextView f13 = chatScreen.makeText("Select", 19.0f, -1, true);
                 f13.setGravity(17);
-                f13.setBackground(chatScreen.roundedDrawable(z4 ? chatScreen.sendBlue : (16777215 & c0022f1.f491k) | (-16777216), 14.0f, 0, 0.0f));
-                f13.setOnClickListener(new ViewOnClickListenerC0077u(chatScreen, c0022f1, dialog, (E2) this.second));
+                f13.setBackground(chatScreen.roundedDrawable(z4 ? chatScreen.sendBlue : (16777215 & c0022f1.ownBubbleGradientEnd) | (-16777216), 14.0f, 0, 0.0f));
+                f13.setOnClickListener(new ChatSettingsClickListener(chatScreen, c0022f1, dialog, (SlideDownDialog) this.second));
                 LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(0, chatScreen.dp(52.0f), 1.0f);
                 layoutParams2.leftMargin = chatScreen.dp(6.0f);
                 P2.addView(f13, layoutParams2);
@@ -131,12 +131,12 @@ public final class MultiAction implements h.a {
                     window.setBackgroundDrawable(new ColorDrawable(i6));
                     window.setLayout(-1, -1);
                     window.addFlags(Integer.MIN_VALUE);
-                    window.setStatusBarColor(z4 ? i6 : c0022f1.f485e);
+                    window.setStatusBarColor(z4 ? i6 : c0022f1.statusBarColor);
                     if (!z4) {
-                        i6 = c0022f1.f486f;
+                        i6 = c0022f1.navigationBarColor;
                     }
                     window.setNavigationBarColor(i6);
-                    boolean z5 = z4 ? !chatScreen.lightBars : c0022f1.q;
+                    boolean z5 = z4 ? !chatScreen.lightBars : c0022f1.lightBars;
                     View decorView = window.getDecorView();
                     decorView.setSystemUiVisibility(z5 ? decorView.getSystemUiVisibility() | 8208 : decorView.getSystemUiVisibility() & (-8209));
                 }
@@ -159,7 +159,7 @@ public final class MultiAction implements h.a {
                     FrameLayout frameLayout3 = (FrameLayout) this.third;
                     frameLayout3.addView(view, layoutParams3);
                     i.g gVar = new i.g();
-                    gVar.f850b = new C0085w1(3);
+                    gVar.f850b = new ValueFunction(3);
                     i.g gVar2 = new i.g();
                     gVar2.f850b = new NoopFunction2(0);
                     DragSheetLayout s2Var = new DragSheetLayout(mainActivity, ViewConfiguration.get(mainActivity).getScaledTouchSlop(), gVar, gVar2);
@@ -228,7 +228,7 @@ public final class MultiAction implements h.a {
                             arrayList.add(file);
                         }
                     }
-                    List<File> O = c.b.O(arrayList, new N0(3));
+                    List<File> O = c.b.O(arrayList, new SortComparator(3));
                     if (!O.isEmpty()) {
                         if (O.size() == 1) {
                             File file2 = (File) O.get(0);

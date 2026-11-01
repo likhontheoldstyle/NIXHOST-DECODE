@@ -140,10 +140,10 @@ public final class HttpConnectionHandler implements Runnable {
         switch (this.mode) {
             case 0: {
                 ApiClient apiClient = ApiClient.INSTANCE;
-                C0022f1 theme = (C0022f1) this.target;
-                ApiResponse result = ApiClient.requestWithDefaults(apiClient, "POST", "/chat/theme", new JSONObject().put("id", theme.f481a).put("q", theme.f483c), 8);
+                ChatTheme theme = (ChatTheme) this.target;
+                ApiResponse result = ApiClient.requestWithDefaults(apiClient, "POST", "/chat/theme", new JSONObject().put("id", theme.id).put("q", theme.emoji), 8);
                 ChatScreen chatUi = (ChatScreen) this.owner;
-                chatUi.activity.runOnUiThread(new S(result, chatUi, 2));
+                chatUi.activity.runOnUiThread(new ChatResultRunnable(result, chatUi, 2));
                 return;
             }
             case 1: {
@@ -217,7 +217,7 @@ public final class HttpConnectionHandler implements Runnable {
                 } catch (Throwable unused) {
                 }
                 if (imageBytes == null) {
-                    chatUi.activity.runOnUiThread(new RunnableC0048m(chatUi, 9));
+                    chatUi.activity.runOnUiThread(new ChatScreenRunnable(chatUi, 9));
                     return;
                 }
                 ApiResponse response;
@@ -258,7 +258,7 @@ public final class HttpConnectionHandler implements Runnable {
                         response = new ApiResponse(0, "");
                     }
                 }
-                chatUi.activity.runOnUiThread(new S(response, chatUi, 3));
+                chatUi.activity.runOnUiThread(new ChatResultRunnable(response, chatUi, 3));
                 return;
             }
             case 2: {
@@ -267,7 +267,7 @@ public final class HttpConnectionHandler implements Runnable {
                     return;
                 }
                 ChatScreen chatUi = (ChatScreen) this.owner;
-                chatUi.activity.runOnUiThread(new S(chatUi, result, 5));
+                chatUi.activity.runOnUiThread(new ChatResultRunnable(chatUi, result, 5));
                 return;
             }
             case 3: {
@@ -283,8 +283,8 @@ public final class HttpConnectionHandler implements Runnable {
                     } else {
                         mediaPlayer.setDataSource(file.getPath());
                     }
-                    mediaPlayer.setOnCompletionListener(new C0010c1());
-                    mediaPlayer.setOnErrorListener(new C0014d1());
+                    mediaPlayer.setOnCompletionListener(new SoundCompletionListener());
+                    mediaPlayer.setOnErrorListener(new SoundErrorListener());
                     mediaPlayer.prepare();
                     mediaPlayer.start();
                     ChatNotifier.soundPlayer = mediaPlayer;
@@ -296,9 +296,9 @@ public final class HttpConnectionHandler implements Runnable {
                 }
             }
             case 4: {
-                B1 gallery = (B1) this.target;
-                gallery.f38m.clear();
-                gallery.f38m.addAll((List) this.owner);
+                MediaPicker gallery = (MediaPicker) this.target;
+                gallery.allMedia.clear();
+                gallery.allMedia.addAll((List) this.owner);
                 gallery.a();
                 return;
             }
@@ -336,7 +336,7 @@ public final class HttpConnectionHandler implements Runnable {
                 ValueAnimator animator = ValueAnimator.ofFloat(0.0f, 1.0f);
                 animator.setDuration(320L);
                 animator.setInterpolator(new DecelerateInterpolator(2.0f));
-                animator.addUpdateListener(new J1(view, height, (View) this.owner));
+                animator.addUpdateListener(new SheetSlideAnimatorListener(view, height, (View) this.owner));
                 animator.start();
                 return;
             }
@@ -365,21 +365,21 @@ public final class HttpConnectionHandler implements Runnable {
                 return;
             default: {
                 File dir = (File) this.owner;
-                y2 y2Var = y2.f736a;
+                TermuxPackageManager y2Var = TermuxPackageManager.INSTANCE;
                 TerminalSession session = (TerminalSession) this.target;
                 File envHome = session.envHomeDir;
                 StringBuilder sb = new StringBuilder();
                 String npmHead = "";
                 try {
-                    File prefix = y2.B();
+                    File prefix = TermuxPackageManager.prefixDir();
                     sb.append("dataDir: ");
-                    sb.append(y2.f().getApplicationInfo().dataDir);
+                    sb.append(TermuxPackageManager.appContext().getApplicationInfo().dataDir);
                     sb.append('\n');
                     sb.append("prefix: ");
-                    sb.append(y2.C());
+                    sb.append(TermuxPackageManager.prefixPath());
                     sb.append('\n');
                     sb.append("ready: ");
-                    sb.append(y2.F());
+                    sb.append(TermuxPackageManager.isPrefixRecorded());
                     sb.append('\n');
                     for (String tool : c.c.C("node", "npm", "sh")) {
                         File toolFile = new File(prefix, "bin/" + tool);
@@ -411,9 +411,9 @@ public final class HttpConnectionHandler implements Runnable {
                         sb.append(npmHead);
                         sb.append('\n');
                     }
-                    ProcessBuilder processBuilder = new ProcessBuilder("/system/bin/sh", "-c", "'" + y2.C() + "/bin/node' -v 2>&1; echo \"npm path: $(command -v npm 2>&1)\"; echo \"NIX_NM=$NIX_NM\"; npm -v 2>&1");
+                    ProcessBuilder processBuilder = new ProcessBuilder("/system/bin/sh", "-c", "'" + TermuxPackageManager.prefixPath() + "/bin/node' -v 2>&1; echo \"npm path: $(command -v npm 2>&1)\"; echo \"NIX_NM=$NIX_NM\"; npm -v 2>&1");
                     processBuilder.directory(dir);
-                    y2.a(processBuilder.environment(), envHome, dir);
+                    TermuxPackageManager.buildEnvironment(processBuilder.environment(), envHome, dir);
                     processBuilder.redirectErrorStream(true);
                     java.lang.Process process = processBuilder.start();
                     sb.append(AppState.v(new BufferedReader(new InputStreamReader(process.getInputStream(), m.a.f864a), 8192)));
