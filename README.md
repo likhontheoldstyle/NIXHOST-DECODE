@@ -1,1 +1,2 @@
-# NIXHOST-DECODE
+# NixHost (Public)
+
