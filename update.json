@@ -1,6 +1,1 @@
-{
-  "versionCode": 6,
-  "versionName": "1.4",
-  "apkUrl": "https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk",
-  "notes": "Update download now shows a progress bar"
-}
+{"apkUrl":"https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk","notes":"Exit leaves the folder; new Exit button on Home stops everything","versionCode":7,"versionName":"1.5"}
