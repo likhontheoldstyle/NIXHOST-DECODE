@@ -1,1 +1,1 @@
-{"apkUrl":"https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk","notes":"New package com.rika.host (installs beside NixHost), Orihost removed for now, startup crash fix","versionCode":29,"versionName":"3.7"}
+{"apkUrl":"https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk","notes":"VerifyError fix: private Safe-wrapper calls corrected to invoke-direct (crashed on open since 3.6)","versionCode":30,"versionName":"3.8"}
