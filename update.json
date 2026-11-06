@@ -1,6 +1,6 @@
 {
-  "versionCode": 35,
-  "versionName": "3.13",
+  "versionCode": 36,
+  "versionName": "3.14",
   "apkUrl": "https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk",
-  "notes": "Terminal output fixed: all escape codes (charset, titles, hyperlinks) are stripped cleanly instead of printing as garbage like (B; colors and normal output unchanged"
+  "notes": "What's new in 3.14:\n\n1. Home screen now shows a live status line under the header: how many instances are running and the longest uptime. It refreshes itself every 20 seconds.\n\n2. This changelog now appears in a big, easy-to-read box on the update screen, so you can read what changed before tapping Update."
 }
