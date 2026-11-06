@@ -1,1 +1,6 @@
-{"apkUrl":"https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk","notes":"Home UI refresh: Dark Minimal menu (dark slate + soft blue), RIKAHOST header in menu, dead Orihost row removed (helper was removed in 3.7)","versionCode":31,"versionName":"3.9"}
+{
+  "versionCode": 32,
+  "versionName": "3.10",
+  "apkUrl": "https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk",
+  "notes": "Crash fix: session code register bug (VerifyError on open/session) repaired; Storage row removed from the 3-dot menu; Dark Minimal menu kept"
+}
