@@ -1,6 +1,6 @@
 {
-  "versionCode": 32,
-  "versionName": "3.10",
+  "versionCode": 33,
+  "versionName": "3.11",
   "apkUrl": "https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk",
-  "notes": "Crash fix: session code register bug (VerifyError on open/session) repaired; Storage row removed from the 3-dot menu; Dark Minimal menu kept"
+  "notes": "3-dot button replaced with a red power symbol button (menu unchanged: RIKAHOST + Exit)"
 }
