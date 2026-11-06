@@ -1,6 +1,6 @@
 {
-  "versionCode": 34,
-  "versionName": "3.12",
+  "versionCode": 35,
+  "versionName": "3.13",
   "apkUrl": "https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk",
-  "notes": "Power logo button (drawn icon) replaces the 3-dot button; tapping it exits directly, no menu"
+  "notes": "Terminal output fixed: all escape codes (charset, titles, hyperlinks) are stripped cleanly instead of printing as garbage like (B; colors and normal output unchanged"
 }
