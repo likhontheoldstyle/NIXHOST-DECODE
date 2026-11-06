@@ -1,1 +1,1 @@
-{"apkUrl":"https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk","notes":"VerifyError fix: private Safe-wrapper calls corrected to invoke-direct (crashed on open since 3.6)","versionCode":30,"versionName":"3.8"}
+{"apkUrl":"https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk","notes":"Home UI refresh: Dark Minimal menu (dark slate + soft blue), RIKAHOST header in menu, dead Orihost row removed (helper was removed in 3.7)","versionCode":31,"versionName":"3.9"}
