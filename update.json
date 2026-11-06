@@ -1,6 +1,6 @@
 {
-  "versionCode": 33,
-  "versionName": "3.11",
+  "versionCode": 34,
+  "versionName": "3.12",
   "apkUrl": "https://raw.githubusercontent.com/likhontheoldstyle/NIXHOST-DECODE/main/RikaHost.apk",
-  "notes": "3-dot button replaced with a red power symbol button (menu unchanged: RIKAHOST + Exit)"
+  "notes": "Power logo button (drawn icon) replaces the 3-dot button; tapping it exits directly, no menu"
 }
